@@ -1,0 +1,9 @@
+{
+  "name": "techmaster-roadmap",
+  "version": "2.0.0",
+  "private": true,
+  "description": "TechMaster Roadmap — modular learning ecosystem",
+  "scripts": {
+    "generate:interviews": "node scripts/generate-interviews.mjs"
+  }
+}

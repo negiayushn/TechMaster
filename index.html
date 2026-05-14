@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechMaster Roadmap — Developer Learning Ecosystem</title>
+  <meta name="description" content="Roadmaps, documentation, projects, interview prep, and productivity tracking for modern full-stack engineers. Your all-in-one learning OS." />
+  <meta name="keywords" content="tech roadmap, full stack developer, software engineering, coding roadmap, learn programming, system design, interview prep, developer portfolio, project-based learning" />
+  <meta name="author" content="TechMaster Roadmap" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://techmaster-roadmap.app/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="TechMaster Roadmap — Developer Learning Ecosystem" />
+  <meta property="og:description" content="Roadmaps, documentation, projects, interview prep, and productivity tracking for modern full-stack engineers." />
+  <meta property="og:url" content="https://techmaster-roadmap.app/" />
+  <meta property="og:site_name" content="TechMaster Roadmap" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TechMaster Roadmap — Developer Learning Ecosystem" />
+  <meta name="twitter:description" content="Roadmaps, documentation, projects, interview prep, and productivity tracking for modern full-stack engineers." />
+
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://avatars.githubusercontent.com https://github-readme-stats.vercel.app https://github-readme-streak-stats.herokuapp.com data:; connect-src 'self' https://api.github.com; frame-src 'none'; object-src 'none'; base-uri 'self'" />
+  <meta name="theme-color" content="#020617" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <link rel="dns-prefetch" href="https://api.github.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme" media="print" onload="this.media='all'" integrity="sha384-wH75j6z1lH97ZOpMOInqhgKzFkAInZPPSPlZpYKYTOqsaizPvhQZmAtLcPKXpLyH" crossorigin="anonymous" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" crossorigin="anonymous" /></noscript>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='13' stroke='%23D4AF37' stroke-width='1.5' fill='none'/%3E%3Cpath d='M7 14L12 9L17 14L22 9' stroke='%23D4AF37' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M7 19L12 14L17 19L22 14' stroke='%23D4AF37' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.5' fill='none'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <link rel="search" type="text/html" href="/" title="TechMaster Roadmap" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TechMaster Roadmap",
+    "url": "https://techmaster-roadmap.app/",
+    "description": "Roadmaps, documentation, projects, interview prep, and productivity tracking for modern full-stack engineers.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript"
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div class="scroll-progress" id="scroll-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Page scroll progress"></div>
+
+  <nav aria-label="Main navigation">
+    <div class="nav-left">
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-controls="nav-drawer">☰</button>
+      <div class="nav-logo" data-nav="home">
+        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <circle cx="14" cy="14" r="13" stroke="#D4AF37" stroke-width="1.5" />
+          <path d="M7 14L12 9L17 14L22 9" stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M7 19L12 14L17 19L22 14" stroke="#D4AF37" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity=".5" />
+        </svg>
+        TechMaster
+      </div>
+    </div>
+    <div class="nav-links" id="nav-links"></div>
+    <div class="nav-actions">
+      <button type="button" class="nav-icon-btn" id="btn-global-search" title="Search (Ctrl+K)" aria-label="Search">⌕</button>
+      <button type="button" class="nav-icon-btn" id="btn-code-theme" title="Toggle code theme" aria-label="Toggle code theme">◐</button>
+      <button type="button" class="nav-icon-btn" id="btn-ui-theme" title="Toggle UI theme" aria-label="Toggle UI theme">☾</button>
+      <button type="button" class="nav-cta" data-nav="roadmap"><span>Start Learning</span> →</button>
+    </div>
+  </nav>
+  <div class="nav-drawer" id="nav-drawer" aria-label="Navigation menu"></div>
+
+  <main id="main-content"><!-- HOME -->
+  <div id="page-home" class="page active">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grid"></div>
+      <div class="hero-badge"><span></span> Professional Learning Ecosystem</div>
+      <h1>Become a <span class="gold">Full Stack + Cloud + AI</span><br />Engineer with a guided system</h1>
+      <p class="hero-sub">TechMaster unifies roadmaps, deep documentation, portfolio projects, interview banks, and a productivity dashboard — all in one premium workspace with offline-friendly progress tracking.</p>
+      <div class="floating-tags">
+        <span class="tag">React</span><span class="tag">Node.js</span><span class="tag">Docker</span><span class="tag">AWS</span>
+        <span class="tag">Security</span><span class="tag">System Design</span><span class="tag">Data &amp; AI</span><span class="tag">MLOps</span>
+      </div>
+      <div class="hero-btns">
+        <button type="button" class="btn-primary" data-nav="roadmap">View Roadmap →</button>
+        <button type="button" class="btn-outline" data-nav="documentation">Open Documentation</button>
+        <button type="button" class="btn-ghost" data-nav="dashboard">Track Progress</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat reveal reveal-d1"><div class="num stat-count" id="stat-docs">60+</div><div class="sub">Doc topics</div></div>
+        <div class="hero-stat reveal reveal-d2"><div class="num stat-count" id="stat-questions">2k+</div><div class="sub">Interview items</div></div>
+        <div class="hero-stat reveal reveal-d3"><div class="num stat-count" id="stat-projects">100+</div><div class="sub">Projects</div></div>
+        <div class="hero-stat reveal reveal-d4"><div class="num stat-count">∞</div><div class="sub">Ambition</div></div>
+      </div>
+    </section>
+    <div style="max-width:80vw;margin:0 auto;padding:0 1.25rem 3rem">
+      <span class="section-label reveal">Ecosystem</span>
+      <h2 class="section-title reveal reveal-d1">Everything in one learning OS</h2>
+      <div class="section-sub reveal reveal-d2">Use Documentation as your MDN-style reference, Projects as shipping practice, Interview as spaced repetition, and Dashboard as accountability.</div>
+      <div class="cards-grid" style="margin-bottom:3rem">
+        <div class="card c-blue reveal reveal-d1" data-nav="documentation"><div class="card-icon" style="background:rgba(37,99,235,.15)">📚</div><h3>Documentation Hub</h3><p>Nested topics, TOC, callouts, syntax highlighting, and copy buttons for every major tool in the curriculum.</p><div class="card-tag" style="background:rgba(37,99,235,.15);color:#60a5fa">Reference-grade</div></div>
+        <div class="card c-emerald reveal reveal-d2" data-nav="projects"><div class="card-icon" style="background:rgba(16,185,129,.15)">🧱</div><h3>Project Lab</h3><p>Beginner → production-grade builds with architecture notes, deployment paths, and interview talking points.</p><div class="card-tag" style="background:rgba(16,185,129,.15);color:var(--emerald)">Portfolio-ready</div></div>
+        <div class="card c-violet reveal reveal-d3" data-nav="interview"><div class="card-icon" style="background:rgba(139,92,246,.15)">🎤</div><h3>Interview Dojo</h3><p>Massive question bank with filters, bookmarks, completion tracking, and senior-level follow-ups.</p><div class="card-tag" style="background:rgba(139,92,246,.15);color:var(--violet)">Spaced repetition</div></div>
+        <div class="card c-cyan reveal reveal-d4" data-nav="dashboard"><div class="card-icon" style="background:rgba(6,182,212,.15)">📈</div><h3>Productivity Dashboard</h3><p>XP, streaks, heatmaps, goals, achievements, and analytics tied to your real activity on the platform.</p><div class="card-tag" style="background:rgba(6,182,212,.15);color:var(--cyan)">Local-first</div></div>
+      </div>
+    </div>
+    <!-- FEEDBACK -->
+    <div class="feedback-section reveal">
+      <span class="section-label reveal" style="text-align:center">Feedback</span>
+      <h2 class="section-title reveal reveal-d1" style="text-align:center">Help improve TechMaster</h2>
+      <div class="section-sub reveal reveal-d2" style="text-align:center">Found a bug? Have a suggestion? I'd love to hear from you.</div>
+      <form class="feedback-form reveal reveal-d3" id="feedback-form">
+        <div class="form-row">
+          <label><span>Name</span><input type="text" id="fb-name" placeholder="Your name" required /></label>
+          <label><span>Email</span><input type="email" id="fb-email" placeholder="your@email.com" required /></label>
+        </div>
+        <label><span>Type</span>
+          <select id="fb-type">
+            <option value="Suggestion">Suggestion</option>
+            <option value="Bug Report">Bug Report</option>
+            <option value="Feature Request">Feature Request</option>
+            <option value="General">General Feedback</option>
+          </select>
+        </label>
+        <label><span>Message</span><textarea id="fb-message" placeholder="Describe your feedback or suggestion in detail..." required></textarea></label>
+        <button type="submit" class="btn-primary">Send Feedback →</button>
+      </form>
+      <div class="feedback-success" id="fb-success" role="status">
+        <div class="icon">✉️</div>
+        <h3>Thank you!</h3>
+        <p>Your feedback will be sent via email. Please check your default email client to complete sending.</p>
+      </div>
+    </div>
+    <footer><strong>TechMaster Roadmap</strong> — Modular, data-driven, and designed for daily depth.</footer>
+  </div>
+
+  <!-- ROADMAP -->
+  <div id="page-roadmap" class="page">
+    <div class="section">
+      <span class="section-label reveal">Complete Roadmap</span>
+      <h2 class="section-title reveal reveal-d1">Multi-track engineering path</h2>
+      <div class="section-sub reveal reveal-d2">Five phases: full-stack foundations, backend systems, platform engineering, security leadership, and Data/AI delivery. Expand any phase for tooling and milestone projects.</div>
+      <div class="timeline" id="roadmap-timeline"></div>
+    </div>
+    <footer><strong>TechMaster Roadmap</strong> — Ship learning like you ship software.</footer>
+  </div>
+
+  <!-- DOCUMENTATION -->
+  <div id="page-documentation" class="page">
+    <div class="section section-wide" style="padding-top:1.5rem">
+      <span class="section-label reveal">Documentation</span>
+      <h2 class="section-title reveal reveal-d1">Deep dives for every stack layer</h2>
+      <div class="toolbar docs-toolbar">
+        <button type="button" class="btn-ghost doc-sidebar-toggle" id="docs-sidebar-toggle" aria-controls="docs-sidebar" aria-expanded="false">Topics</button>
+        <input type="search" id="docs-search-input" class="search-lg" placeholder="Filter topics (e.g. React, JWT, Postgres)…" autocomplete="off" aria-label="Filter documentation topics" />
+        <select id="docs-group-filter" aria-label="Filter by group" style="padding:10px 36px 10px 14px;border-radius:10px;background-color:rgba(255,255,255,.05);background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 12px center;border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;-webkit-appearance:none;appearance:none;cursor:pointer"></select>
+      </div>
+      <div class="doc-shell" id="doc-shell">
+        <aside class="doc-sidebar" id="docs-sidebar" aria-label="Documentation topics"><div class="skeleton" style="width:80%;height:16px"></div><div class="skeleton" style="width:60%"></div></aside>
+        <article class="doc-main">
+          <div class="doc-breadcrumb" id="docs-breadcrumb">Documentation / …</div>
+          <div class="doc-article" id="docs-article"></div>
+        </article>
+        <aside class="doc-toc-panel" id="docs-toc" aria-label="On this page"><span class="doc-toc-heading">On this page</span><div id="docs-toc-links"></div></aside>
+      </div>
+    </div>
+    <footer><strong>TechMaster Docs</strong> — Calm reading, fast lookup.</footer>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="page-projects" class="page">
+    <div class="section section-wide">
+      <span class="section-label reveal">Projects</span>
+      <h2 class="section-title reveal reveal-d1">Build proof, not tutorials only</h2>
+      <div class="toolbar">
+        <input type="search" id="proj-search" placeholder="Search projects…" class="search-lg" aria-label="Search projects" />
+        <select id="proj-cat" aria-label="Filter by category"></select>
+        <select id="proj-tier" aria-label="Filter by tier"></select>
+        <button type="button" class="btn-ghost" id="proj-fav-only">★ Favorites</button>
+      </div>
+      <div class="proj-cards" id="proj-grid" aria-live="polite"></div>
+    </div>
+    <footer><strong>TechMaster Projects</strong> — Deploy. Measure. Tell the story.</footer>
+  </div>
+
+  <!-- INTERVIEW -->
+  <div id="page-interview" class="page">
+    <div class="section section-wide">
+      <span class="section-label reveal">Interview</span>
+      <h2 class="section-title reveal reveal-d1">Structured reps for real panels</h2>
+      <div class="toolbar">
+        <input type="search" id="int-search" class="search-lg" placeholder="Search questions, answers, tech…" aria-label="Search interview questions" />
+        <select id="int-tech" aria-label="Filter by technology"></select>
+        <select id="int-diff" aria-label="Filter by difficulty"></select>
+        <button type="button" class="btn-ghost" id="int-expand">Expand all</button>
+        <button type="button" class="btn-ghost" id="int-collapse">Collapse all</button>
+      </div>
+      <p class="section-sub" style="margin-top:-.5rem">Bookmark items for spaced repetition. Mark completed to earn XP on the dashboard.</p>
+      <div class="qa-list" id="qa-list" aria-live="polite"></div>
+    </div>
+    <footer><strong>TechMaster Interview</strong> — Clarity beats volume.</footer>
+  </div>
+
+  <!-- DATA & AI -->
+  <div id="page-data-ai" class="page">
+    <div class="section">
+      <span class="section-label reveal">Data Science &amp; AI</span>
+      <h2 class="section-title reveal reveal-d1">New roadmap spine for intelligent products</h2>
+      <div class="section-sub">Covers Python scientific stack, classical ML, deep learning, NLP/CV, LLM foundations, RAG, vector databases, notebooks, datasets, deployment, MLOps, and AI-specific interview prep — all linked into Documentation.</div>
+      <div class="cards-grid" id="data-ai-cards"></div>
+      <div class="divider reveal"></div>
+      <span class="section-label reveal">Delivery checklist</span>
+      <h3 class="section-title reveal reveal-d1">From notebook to production</h3>
+      <ul class="proj-list" style="max-width:720px">
+        <li>Version datasets; document schema and label definitions</li>
+        <li>Track experiments (parameters, metrics, artifacts)</li>
+        <li>Package inference with latency budgets and batch/online modes</li>
+        <li>Add monitoring for data drift, concept drift, and business KPIs</li>
+        <li>Run tabletop exercises for model incidents and rollback</li>
+      </ul>
+    </div>
+    <footer><strong>TechMaster Data &amp; AI</strong> — Responsible shipping.</footer>
+  </div>
+
+  <!-- CAREER -->
+  <div id="page-career" class="page">
+    <div class="section section-wide">
+      <span class="section-label reveal">Career &amp; professional</span>
+      <h2 class="section-title reveal reveal-d1">Launch, position, and compound</h2>
+      <div class="doc-tabs" style="margin-bottom:1.25rem" id="career-tabs" role="tablist" aria-label="Career sections">
+        <button type="button" class="doc-tab active" data-career-tab="strategy" role="tab" aria-selected="true">Strategy</button>
+        <button type="button" class="doc-tab" data-career-tab="resume" role="tab" aria-selected="false">Resume builder</button>
+        <button type="button" class="doc-tab" data-career-tab="github" role="tab" aria-selected="false">GitHub profile</button>
+        <button type="button" class="doc-tab" data-career-tab="portfolio" role="tab" aria-selected="false">Portfolio checklist</button>
+        <button type="button" class="doc-tab" data-career-tab="certs" role="tab" aria-selected="false">Certificates</button>
+      </div>
+      <div id="career-panel-strategy" role="tabpanel" aria-label="Strategy">
+          <div class="career-card"><div class="icon">🌍</div><h3>Remote</h3><p>Strong async portfolio, written communication, and overlap planning for global teams.</p><ul class="career-items"><li>Pin deployable demos</li><li>Public postmortems</li><li>Timezone discipline</li></ul></div>
+          <div class="career-card"><div class="icon">🏢</div><h3>Enterprise</h3><p>Compliance-aware delivery, stakeholder visibility, and predictable release trains.</p><ul class="career-items"><li>Security narratives</li><li>SLO language</li><li>Change management</li></ul></div>
+          <div class="career-card"><div class="icon">🚀</div><h3>Startup</h3><p>Breadth, speed, and product intuition with pragmatic tradeoffs.</p><ul class="career-items"><li>Show customer impact</li><li>Own ambiguous spaces</li><li>Ship weekly</li></ul></div>
+          <div class="career-card"><div class="icon">🎯</div><h3>Consulting</h3><p>Clear statements of work, estimates, and risk registers clients can trust.</p><ul class="career-items"><li>Written proposals</li><li>Milestone demos</li><li>Knowledge transfer</li></ul></div>
+      </div>
+      <div id="career-panel-resume" style="display:none" role="tabpanel">
+      </div>
+      <div id="career-panel-github" style="display:none" role="tabpanel">
+      </div>
+      <div id="career-panel-portfolio" style="display:none" class="panel" role="tabpanel">
+        <h3>Portfolio checklist</h3>
+        <div class="checklist" id="portfolio-checklist"></div>
+      </div>
+      <div id="career-panel-certs" style="display:none" class="panel" role="tabpanel">
+      </div>
+    </div>
+    <footer><strong>TechMaster Career</strong> — Positioning is a shipping skill.</footer>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page">
+    <div class="section section-wide">
+      <span class="section-label reveal">Dashboard</span>
+      <h2 class="section-title reveal reveal-d1">Accountability &amp; momentum</h2>
+      <div class="doc-tabs" id="dash-tabs" style="margin-bottom:1rem" role="tablist" aria-label="Dashboard sections">
+        <button type="button" class="doc-tab active" data-dash-tab="overview" role="tab" aria-selected="true">Overview</button>
+        <button type="button" class="doc-tab" data-dash-tab="planner" role="tab" aria-selected="false">Study planner</button>
+        <button type="button" class="doc-tab" data-dash-tab="notes" role="tab" aria-selected="false">Notes</button>
+      </div>
+      <div id="dash-overview" role="tabpanel">
+        <div class="dash-grid">
+          <div class="dash-stat"><div class="val" id="xp-val">0</div><div class="sub">XP</div></div>
+          <div class="dash-stat"><div class="val" id="lvl-val">1</div><div class="sub">Level</div></div>
+          <div class="dash-stat"><div class="val" id="streak-val">0</div><div class="sub">Day streak</div></div>
+          <div class="dash-stat"><div class="val" id="study-val">0</div><div class="sub">Study minutes (7d)</div></div>
+          <div class="dash-stat"><div class="val" id="today-study">0</div><div class="sub">Today (min)</div></div>
+          <div class="dash-stat"><div class="val" id="pct-val">0%</div><div class="sub">Checklist</div></div>
+          <div class="dash-stat"><div class="val" id="int-done">0</div><div class="sub">Interview items done</div></div>
+        </div>
+        <div class="panel dash-daily" style="margin-bottom:1.25rem">
+          <h3>Daily study tracker</h3>
+          <p style="font-size:.8rem;color:var(--muted);margin-bottom:.75rem">Log focused minutes for today. Feeds XP, streak context, and the weekly chart.</p>
+          <div class="dash-daily-row">
+            <input id="daily-minutes" type="number" min="5" step="5" value="25" aria-label="Minutes to log" />
+            <button type="button" class="btn-primary" id="daily-add">Log minutes</button>
+            <button type="button" class="btn-ghost" id="daily-reset">Reset today</button>
+          </div>
+        </div>
+        <div class="dash-split">
+          <div class="panel">
+            <h3>Weekly rhythm</h3>
+            <div class="chart-row" id="weekly-chart"></div>
+            <p style="font-size:.78rem;color:var(--muted);margin-top:.5rem">Bars = last 7 days study minutes (manual log).</p>
+          </div>
+          <div class="panel">
+            <h3>Activity heatmap</h3>
+            <div class="heatmap-grid" id="heatmap"></div>
+            <p style="font-size:.78rem;color:var(--muted);margin-top:.5rem">Intensity from visits + logged study.</p>
+          </div>
+        </div>
+        <div class="dash-split">
+          <div class="panel">
+            <h3>Skill focus</h3>
+            <div class="skill-bars" id="skill-bars"></div>
+          </div>
+          <div class="panel">
+            <h3>Roadmap checklist</h3>
+            <div class="checklist" id="checklist"></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:1.25rem">
+          <h3>Achievements</h3>
+          <div id="achievements" style="display:flex;flex-wrap:wrap;gap:8px;font-size:.82rem;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div id="dash-planner" style="display:none" role="tabpanel">
+        <div class="dash-split">
+          <div class="panel">
+            <h3>Daily planner</h3>
+            <div style="display:flex;gap:8px;margin-bottom:.75rem">
+              <input id="planner-input" type="text" placeholder="Deep work block…" aria-label="Task description" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text)" />
+              <input id="planner-min" type="number" min="5" step="5" value="25" aria-label="Minutes for task" style="width:90px;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text)" />
+              <button type="button" class="btn-primary" id="planner-add">Add</button>
+            </div>
+            <div id="planner-list"></div>
+          </div>
+          <div class="panel">
+            <h3>Goals</h3>
+            <label style="font-size:.8rem;color:var(--muted)">Weekly goal (hours)</label>
+            <input id="goal-weekly" type="number" min="1" style="width:100%;margin:.35rem 0 1rem;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text)" />
+            <label style="font-size:.8rem;color:var(--muted)">Monthly goal (projects shipped)</label>
+            <input id="goal-monthly" type="number" min="1" style="width:100%;margin:.35rem 0;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text)" />
+            <button type="button" class="btn-outline" id="goal-save" style="margin-top:1rem">Save goals</button>
+          </div>
+        </div>
+      </div>
+      <div id="dash-notes" style="display:none" role="tabpanel">
+        <div class="notes-app panel">
+          <div class="notes-layout">
+            <aside class="notes-sidebar">
+              <div class="notes-toolbar">
+                <input type="search" id="notes-search" placeholder="Search notes…" class="notes-search" aria-label="Search notes" />
+                <button type="button" class="btn-primary notes-new-btn" id="notes-new" title="New note" aria-label="New note">＋</button>
+              </div>
+              <div id="notes-list" class="notes-list"></div>
+            </aside>
+            <div class="notes-editor">
+              <div class="notes-editor-head">
+                <input id="notes-title" type="text" class="notes-title-input" placeholder="Note title" aria-label="Note title" />
+                <div class="notes-editor-actions">
+                  <button type="button" class="btn-ghost" id="notes-pin" title="Pin note">Pin</button>
+                  <button type="button" class="btn-ghost" id="notes-delete" title="Delete note">Delete</button>
+                  <button type="button" class="btn-outline" id="notes-save-now">Save</button>
+                  <span class="notes-status" id="notes-status">Saved</span>
+                </div>
+              </div>
+              <label class="notes-tags-label">Tags / category <input id="notes-tags" type="text" class="notes-tags-input" placeholder="interview, roadmap, ideas" /></label>
+              <textarea id="notes-body" class="notes-body" rows="16" placeholder="Markdown-friendly: use # headings, lists, and code fences."></textarea>
+              <p class="notes-hint">Auto-saves while you type. Everything stays in your browser (localStorage).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer><strong>TechMaster Dashboard</strong> — What gets measured gets improved.</footer>
+  </div>
+
+  </main>
+
+  <!-- PROJECT MODAL -->
+  <div class="modal-overlay" id="modal-project" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mp-title">
+      <button type="button" class="modal-close" data-close-modal="modal-project" aria-label="Close project details">×</button>
+      <h2 id="mp-title">Project</h2>
+      <div id="mp-body"></div>
+    </div>
+  </div>
+
+  <!-- GLOBAL SEARCH -->
+  <div class="glob-overlay" id="glob-overlay" role="dialog" aria-modal="true" aria-label="Search everything">
+    <div class="glob-modal">
+      <input class="glob-search" id="glob-search" placeholder="Search docs, projects, interviews… (Esc to close)" autocomplete="off" />
+      <div id="glob-results" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toast-wrap" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div class="fab-stack">
+    <button type="button" class="fab secondary" id="fab-quick" title="Quick nav" aria-label="Quick nav">⌁</button>
+    <button type="button" class="fab" id="fab-top" title="Back to top" aria-label="Back to top">↑</button>
+  </div>
+
+  <nav class="app-bottom-nav" aria-label="Primary">
+    <button type="button" data-nav="home" class="bottom-nav-btn">Home</button>
+    <button type="button" data-nav="roadmap" class="bottom-nav-btn">Map</button>
+    <button type="button" data-nav="documentation" class="bottom-nav-btn">Docs</button>
+    <button type="button" data-nav="projects" class="bottom-nav-btn">Build</button>
+    <button type="button" data-nav="dashboard" class="bottom-nav-btn">Dash</button>
+  </nav>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha384-F/bZzf7p3Joyp5psL90p/p89AZJsndkSoGwRpXcZhleCWhd8SnRuoYo4d0yirjJp" crossorigin="anonymous" defer></script>
+  <script src="js/config.js" defer></script>
+  <script src="js/docs-data.js" defer></script>
+  <script src="js/docs-engine.js" defer></script>
+  <script src="js/interview-generator.js" defer></script>
+  <script src="js/projects-data.js" defer></script>
+  <script src="js/roadmap-data.js" defer></script>
+  <script src="js/theme.js" defer></script>
+  <script src="js/notes.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>

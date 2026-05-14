@@ -1,0 +1,42 @@
+/* TechMaster global configuration — loaded before other scripts */
+(function (global) {
+  global.TM_CONFIG = {
+    STORAGE_KEYS: {
+      progress: "tm-v2-progress",
+      interview: "tm-v2-interview",
+      bookmarks: "tm-v2-bookmarks",
+      favoritesProjects: "tm-v2-fav-projects",
+      notes: "tm-v2-notes",
+      planner: "tm-v2-planner",
+      theme: "tm-v2-theme",
+      codeTheme: "tm-v2-code-theme",
+      lastVisit: "tm-v2-last-visit",
+      streak: "tm-v2-streak",
+      studyMinutes: "tm-v2-study-minutes",
+      heatmap: "tm-v2-heatmap",
+      xp: "tm-v2-xp",
+      achievements: "tm-v2-achievements",
+      weeklyGoals: "tm-v2-weekly-goals",
+      monthlyGoals: "tm-v2-monthly-goals",
+      resumeDraft: "tm-v2-resume-draft",
+      roadmapTopics: "tm-v2-roadmap-topics",
+      projectOverrides: "tm-v2-project-overrides",
+      notesV2: "tm-v2-notes-v2",
+      dailyStudy: "tm-v2-daily-study",
+    },
+    PAGES: [
+      { id: "home", label: "Home" },
+      { id: "roadmap", label: "Roadmap" },
+      { id: "documentation", label: "Documentation" },
+      { id: "projects", label: "Projects" },
+      { id: "interview", label: "Interview" },
+      { id: "data-ai", label: "Data & AI" },
+      { id: "career", label: "Career" },
+      { id: "dashboard", label: "Dashboard" },
+    ],
+    XP_PER_LESSON: 25,
+    XP_PER_PROJECT: 120,
+    XP_PER_INTERVIEW: 8,
+    LEVEL_BASE_XP: 500,
+  };
+})(window);

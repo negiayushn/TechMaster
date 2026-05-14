@@ -1,0 +1,901 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechMaster Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A192F;--navy2:#0d2137;--gold:#D4AF37;--gold2:#b8961f;--bg:#020617;
+  --accent:#1E3A8A;--accent2:#2563eb;--glass:rgba(10,25,47,0.7);
+  --text:#e2e8f0;--muted:#94a3b8;--border:rgba(212,175,55,0.18);
+  --card:rgba(14,30,54,0.8);--cyan:#06b6d4;--emerald:#10b981;--violet:#8b5cf6;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;min-height:100vh}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
+
+/* NAVBAR */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--gold);cursor:pointer}
+.nav-logo svg{width:28px;height:28px}
+.nav-links{display:flex;gap:6px}
+.nav-link{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .2s}
+.nav-link:hover,.nav-link.active{color:var(--gold);background:rgba(212,175,55,.08)}
+.nav-cta{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:600;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;transition:all .2s}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(212,175,55,.35)}
+
+/* LAYOUT */
+.page{display:none;margin-top:64px}
+.page.active{display:block}
+main-content{display:block}
+
+/* HERO */
+.hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 2rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(30,58,138,.35),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(212,175,55,.08),transparent);pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(212,175,55,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(212,175,55,.04) 1px,transparent 1px);background-size:60px 60px;pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);border-radius:999px;padding:6px 16px;font-size:.8rem;color:var(--gold);margin-bottom:2rem}
+.hero-badge span{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+.hero h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:800;line-height:1.1;max-width:800px;margin-bottom:1.5rem;letter-spacing:-.02em}
+.hero h1 .gold{background:linear-gradient(135deg,var(--gold),#f0c842);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{color:var(--muted);font-size:1.1rem;max-width:560px;line-height:1.7;margin-bottom:2.5rem}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:3rem}
+.btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:700;border:none;padding:14px 28px;border-radius:10px;cursor:pointer;font-size:.95rem;font-family:'DM Sans',sans-serif;transition:all .25s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(212,175,55,.4)}
+.btn-outline{background:transparent;color:var(--text);font-weight:500;border:1px solid rgba(255,255,255,.2);padding:14px 28px;border-radius:10px;cursor:pointer;font-size:.95rem;font-family:'DM Sans',sans-serif;transition:all .25s}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);background:rgba(212,175,55,.06)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:600px;width:100%}
+.hero-stat{background:var(--card);padding:1.25rem;text-align:center}
+.hero-stat .num{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:700;color:var(--gold)}
+.hero-stat .label{font-size:.75rem;color:var(--muted);margin-top:2px}
+.floating-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:2rem}
+.tag{background:rgba(30,58,138,.3);border:1px solid rgba(37,99,235,.3);border-radius:6px;padding:5px 12px;font-size:.78rem;color:#93c5fd}
+
+/* SECTION */
+.section{padding:5rem 2rem;max-width:1100px;margin:0 auto}
+.section-label{font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.section-title{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;line-height:1.15;margin-bottom:1rem}
+.section-sub{color:var(--muted);font-size:1rem;line-height:1.7;max-width:600px;margin-bottom:3rem}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:all .25s;cursor:pointer}
+.card:hover{border-color:rgba(212,175,55,.4);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem}
+.card h3{font-size:1rem;font-weight:700;margin-bottom:.5rem}
+.card p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.card-tag{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:5px;margin-top:.75rem}
+
+/* ROADMAP TIMELINE */
+.timeline{position:relative;padding-left:3rem}
+.timeline::before{content:'';position:absolute;left:20px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--gold),transparent)}
+.phase{position:relative;margin-bottom:2rem}
+.phase-dot{position:absolute;left:-36px;top:24px;width:16px;height:16px;border-radius:50%;border:2px solid var(--gold);background:var(--bg);display:flex;align-items:center;justify-content:center}
+.phase-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.phase-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .25s}
+.phase-card:hover{border-color:rgba(212,175,55,.4)}
+.phase-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;gap:1rem}
+.phase-info{flex:1}
+.phase-num{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:.25rem}
+.phase-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700}
+.phase-meta{display:flex;gap:.75rem;margin-top:.5rem;flex-wrap:wrap}
+.meta-chip{font-size:.72rem;padding:3px 9px;border-radius:5px;font-weight:500}
+.phase-body{padding:0 1.5rem 1.5rem;display:none;border-top:1px solid var(--border);margin-top:0}
+.phase-body.open{display:block;padding-top:1.25rem}
+.tech-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+.tech-chip{background:rgba(30,58,138,.25);border:1px solid rgba(37,99,235,.25);border-radius:6px;padding:4px 10px;font-size:.75rem;color:#93c5fd}
+.proj-list{list-style:none}
+.proj-list li{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);padding:4px 0}
+.proj-list li::before{content:'▸';color:var(--gold);font-size:.7rem}
+.chevron{width:20px;height:20px;color:var(--muted);transition:transform .25s;flex-shrink:0}
+.chevron.open{transform:rotate(180deg)}
+
+/* SALARY SECTION */
+.salary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.salary-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem}
+.salary-card .role{font-size:.8rem;color:var(--muted);margin-bottom:.5rem}
+.salary-card .range{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--emerald)}
+.salary-card .note{font-size:.75rem;color:var(--muted);margin-top:.25rem}
+.progress-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:.75rem;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--emerald))}
+
+/* TECH GRID (big) */
+.big-tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem}
+.tech-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
+.tech-box:hover{border-color:rgba(212,175,55,.4);background:rgba(14,30,54,1)}
+.tech-box .emoji{font-size:1.6rem;margin-bottom:.5rem;display:block}
+.tech-box .name{font-size:.8rem;font-weight:600}
+.tech-box .lvl{font-size:.7rem;color:var(--muted);margin-top:.2rem}
+
+/* INTERVIEW */
+.qa-list{display:flex;flex-direction:column;gap:.75rem}
+.qa-item{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer}
+.qa-q{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;gap:1rem;font-size:.9rem;font-weight:500}
+.qa-a{display:none;padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:var(--muted);line-height:1.7;border-top:1px solid var(--border)}
+.qa-a.open{display:block}
+.qa-a code{background:rgba(30,58,138,.3);border:1px solid rgba(37,99,235,.2);border-radius:4px;padding:1px 6px;font-family:monospace;font-size:.82rem;color:#93c5fd}
+.cat-badge{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:4px;flex-shrink:0}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
+.dash-stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;text-align:center}
+.dash-stat .val{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold)}
+.dash-stat .sub{font-size:.78rem;color:var(--muted);margin-top:.25rem}
+.skill-bars{display:flex;flex-direction:column;gap:.75rem}
+.skill-bar-row{display:flex;flex-direction:column;gap:.35rem}
+.skill-bar-label{display:flex;justify-content:space-between;font-size:.82rem}
+.skill-bar-track{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.skill-bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+
+/* PROJECTS */
+.proj-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem}
+.proj-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .25s;cursor:pointer}
+.proj-card:hover{border-color:rgba(212,175,55,.35);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.proj-card-img{height:120px;display:flex;align-items:center;justify-content:center;font-size:3rem}
+.proj-card-body{padding:1.25rem}
+.proj-card-body h3{font-size:.95rem;font-weight:700;margin-bottom:.4rem}
+.proj-card-body p{font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:.75rem}
+.proj-tags{display:flex;flex-wrap:wrap;gap:5px}
+.proj-tag{font-size:.68rem;font-weight:600;padding:2px 8px;border-radius:4px}
+.diff-badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.05em}
+
+/* CAREER */
+.career-path-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem}
+.career-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:all .25s}
+.career-card:hover{border-color:rgba(212,175,55,.3);transform:translateY(-2px)}
+.career-card .icon{font-size:2rem;margin-bottom:.75rem}
+.career-card h3{font-size:1rem;font-weight:700;margin-bottom:.5rem}
+.career-card p{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem}
+.career-items{list-style:none;display:flex;flex-direction:column;gap:.35rem}
+.career-items li{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.career-items li::before{content:'✓';color:var(--emerald);font-weight:700}
+
+/* FOOTER */
+footer{background:rgba(2,6,23,.98);border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--muted);font-size:.82rem;margin-top:4rem}
+footer strong{color:var(--gold)}
+
+/* COLORS */
+.c-gold{background:rgba(212,175,55,.12);border-color:rgba(212,175,55,.25)!important}
+.c-blue{background:rgba(37,99,235,.12);border-color:rgba(37,99,235,.25)!important}
+.c-emerald{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.25)!important}
+.c-violet{background:rgba(139,92,246,.12);border-color:rgba(139,92,246,.25)!important}
+.c-cyan{background:rgba(6,182,212,.12);border-color:rgba(6,182,212,.25)!important}
+.t-gold{color:var(--gold)}
+.t-blue{color:#60a5fa}
+.t-emerald{color:var(--emerald)}
+.t-violet{color:var(--violet)}
+.t-cyan{color:var(--cyan)}
+.t-red{color:#f87171}
+
+.divider{height:1px;background:var(--border);margin:3rem 0}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(212,175,55,.25);border-radius:3px}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  nav{padding:0 1rem}
+  .nav-links{display:none}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .section{padding:3rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">
+    <svg viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="13" stroke="#D4AF37" stroke-width="1.5"/>
+      <path d="M7 14L12 9L17 14L22 9" stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7 19L12 14L17 19L22 14" stroke="#D4AF37" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+    </svg>
+    TechMaster
+  </div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('home')">Home</button>
+    <button class="nav-link" onclick="showPage('roadmap')">Roadmap</button>
+    <button class="nav-link" onclick="showPage('projects')">Projects</button>
+    <button class="nav-link" onclick="showPage('interview')">Interview</button>
+    <button class="nav-link" onclick="showPage('career')">Career</button>
+    <button class="nav-link" onclick="showPage('dashboard')">Dashboard</button>
+  </div>
+  <button class="nav-cta" onclick="showPage('roadmap')">Start Learning →</button>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-badge"><span></span> 2024–2025 Complete Roadmap</div>
+    <h1>Become a <span class="gold">Full Stack + DevOps</span><br>Engineer in 1 Year</h1>
+    <p class="hero-sub">A structured, production-ready roadmap covering Frontend, Backend, DevOps, and Cybersecurity — built for remote jobs, startups, and high-salary roles.</p>
+    <div class="floating-tags">
+      <span class="tag">React</span><span class="tag">Node.js</span><span class="tag">Docker</span><span class="tag">AWS</span>
+      <span class="tag">MongoDB</span><span class="tag">Kubernetes</span><span class="tag">CI/CD</span><span class="tag">Security</span>
+    </div>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('roadmap')">View Full Roadmap →</button>
+      <button class="btn-outline" onclick="showPage('dashboard')">Track Progress</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">12</div><div class="label">Months</div></div>
+      <div class="hero-stat"><div class="num">4</div><div class="label">Phases</div></div>
+      <div class="hero-stat"><div class="num">40+</div><div class="label">Projects</div></div>
+      <div class="hero-stat"><div class="num">$120k</div><div class="label">Avg Salary</div></div>
+    </div>
+  </section>
+
+  <div style="max-width:1100px;margin:0 auto;padding:0 2rem">
+    <div class="section-label">What You'll Master</div>
+    <div class="section-title">4 High-Impact Skill Domains</div>
+    <div class="section-sub">Every technology is chosen for real-world demand and salary impact.</div>
+    <div class="cards-grid" style="margin-bottom:3rem">
+      <div class="card c-blue" onclick="showPage('roadmap')">
+        <div class="card-icon" style="background:rgba(37,99,235,.15)">🎨</div>
+        <h3>Frontend Development</h3>
+        <p>HTML, CSS, JavaScript, React, Next.js, Tailwind CSS — build pixel-perfect, performant UIs.</p>
+        <div class="card-tag" style="background:rgba(37,99,235,.15);color:#60a5fa">Month 1–2</div>
+      </div>
+      <div class="card c-emerald" onclick="showPage('roadmap')">
+        <div class="card-icon" style="background:rgba(16,185,129,.15)">⚙️</div>
+        <h3>Backend Development</h3>
+        <p>Node.js, Express, MongoDB, REST APIs, JWT, Redis, WebSockets — build scalable backends.</p>
+        <div class="card-tag" style="background:rgba(16,185,129,.15);color:var(--emerald)">Month 3–5</div>
+      </div>
+      <div class="card c-violet" onclick="showPage('roadmap')">
+        <div class="card-icon" style="background:rgba(139,92,246,.15)">🚀</div>
+        <h3>DevOps & Cloud</h3>
+        <p>Docker, AWS, Nginx, GitHub Actions, CI/CD — deploy and manage production infrastructure.</p>
+        <div class="card-tag" style="background:rgba(139,92,246,.15);color:var(--violet)">Month 6–8</div>
+      </div>
+      <div class="card c-gold" onclick="showPage('roadmap')">
+        <div class="card-icon" style="background:rgba(212,175,55,.15)">🔒</div>
+        <h3>Cybersecurity</h3>
+        <p>OWASP Top 10, XSS, CSRF, JWT security, networking — build secure production applications.</p>
+        <div class="card-tag" style="background:rgba(212,175,55,.15);color:var(--gold)">Month 9–12</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-label">Salary Expectations</div>
+    <div class="section-title">What You Can Earn</div>
+    <div class="section-sub">Realistic salary ranges across different roles and experience levels after completing this roadmap.</div>
+    <div class="salary-grid" style="margin-bottom:3rem">
+      <div class="salary-card">
+        <div class="role">Frontend Developer</div>
+        <div class="range">$70k–$110k</div>
+        <div class="note">Remote-ready after Month 2</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+      </div>
+      <div class="salary-card">
+        <div class="role">Full Stack Developer</div>
+        <div class="range">$90k–$140k</div>
+        <div class="note">Ready after Month 5</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+      </div>
+      <div class="salary-card">
+        <div class="role">DevOps Engineer</div>
+        <div class="range">$100k–$150k</div>
+        <div class="note">Ready after Month 8</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:88%"></div></div>
+      </div>
+      <div class="salary-card">
+        <div class="role">Security Engineer</div>
+        <div class="range">$110k–$170k</div>
+        <div class="note">Ready after Month 12</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:95%"></div></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Technologies</div>
+    <div class="section-title">Full Stack Tech Ecosystem</div>
+    <div class="big-tech-grid" style="margin-bottom:3rem">
+      <div class="tech-box"><span class="emoji">⚛️</span><div class="name">React</div><div class="lvl t-blue">Frontend</div></div>
+      <div class="tech-box"><span class="emoji">🟢</span><div class="name">Node.js</div><div class="lvl t-emerald">Backend</div></div>
+      <div class="tech-box"><span class="emoji">🍃</span><div class="name">MongoDB</div><div class="lvl t-emerald">Database</div></div>
+      <div class="tech-box"><span class="emoji">🐳</span><div class="name">Docker</div><div class="lvl t-violet">DevOps</div></div>
+      <div class="tech-box"><span class="emoji">☁️</span><div class="name">AWS</div><div class="lvl t-violet">Cloud</div></div>
+      <div class="tech-box"><span class="emoji">🔧</span><div class="name">Next.js</div><div class="lvl t-blue">Full Stack</div></div>
+      <div class="tech-box"><span class="emoji">🎨</span><div class="name">Tailwind</div><div class="lvl t-blue">CSS</div></div>
+      <div class="tech-box"><span class="emoji">⚡</span><div class="name">Redis</div><div class="lvl t-emerald">Cache</div></div>
+      <div class="tech-box"><span class="emoji">🔄</span><div class="name">CI/CD</div><div class="lvl t-violet">Automation</div></div>
+      <div class="tech-box"><span class="emoji">🔒</span><div class="name">OWASP</div><div class="lvl t-gold">Security</div></div>
+      <div class="tech-box"><span class="emoji">🌐</span><div class="name">Nginx</div><div class="lvl t-violet">Server</div></div>
+      <div class="tech-box"><span class="emoji">🐧</span><div class="name">Linux</div><div class="lvl t-violet">OS</div></div>
+    </div>
+  </div>
+
+  <footer>
+    Built with <strong>TechMaster Roadmap</strong> — Your 1-Year Path to a High-Income Engineering Career<br>
+    <span style="margin-top:6px;display:block">Navigate the pages above to explore the full roadmap →</span>
+  </footer>
+</div>
+
+<!-- ROADMAP PAGE -->
+<div id="page-roadmap" class="page">
+  <div class="section">
+    <div class="section-label">Complete Roadmap</div>
+    <div class="section-title">Your 12-Month Learning Path</div>
+    <div class="section-sub">Each phase builds on the last. Click any phase to expand details.</div>
+
+    <div class="timeline">
+      <!-- PHASE 1 -->
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-card" onclick="togglePhase(1)">
+          <div class="phase-header">
+            <div class="phase-info">
+              <div class="phase-num">Phase 1 · Month 1–2</div>
+              <div class="phase-title">Frontend Foundations</div>
+              <div class="phase-meta">
+                <span class="meta-chip" style="background:rgba(37,99,235,.15);color:#60a5fa">Beginner</span>
+                <span class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted)">⏱ 200 hours</span>
+                <span class="meta-chip" style="background:rgba(16,185,129,.12);color:var(--emerald)">+$30k salary</span>
+              </div>
+            </div>
+            <svg class="chevron" id="chev-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="phase-body" id="body-1">
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Technologies</div>
+              <div class="tech-grid">
+                <span class="tech-chip">HTML5</span><span class="tech-chip">CSS3</span><span class="tech-chip">JavaScript ES6+</span>
+                <span class="tech-chip">React 18</span><span class="tech-chip">Tailwind CSS</span><span class="tech-chip">Vite</span>
+                <span class="tech-chip">Next.js 14</span><span class="tech-chip">Git & GitHub</span>
+              </div>
+            </div>
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Learning Goals</div>
+              <ul class="proj-list">
+                <li>Master HTML semantic structure and accessibility</li>
+                <li>CSS Flexbox, Grid, animations, and responsive design</li>
+                <li>JavaScript DOM, async/await, Fetch API, closures</li>
+                <li>Build interactive React components with hooks</li>
+                <li>Server-side rendering with Next.js App Router</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Milestone Projects</div>
+              <ul class="proj-list">
+                <li>SaaS Landing Page (HTML/CSS)</li>
+                <li>JavaScript Weather Dashboard</li>
+                <li>React E-Commerce UI</li>
+                <li>Next.js Blog with MDX</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-card" onclick="togglePhase(2)">
+          <div class="phase-header">
+            <div class="phase-info">
+              <div class="phase-num">Phase 2 · Month 3–5</div>
+              <div class="phase-title">Backend Development</div>
+              <div class="phase-meta">
+                <span class="meta-chip" style="background:rgba(16,185,129,.12);color:var(--emerald)">Intermediate</span>
+                <span class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted)">⏱ 320 hours</span>
+                <span class="meta-chip" style="background:rgba(16,185,129,.12);color:var(--emerald)">+$40k salary</span>
+              </div>
+            </div>
+            <svg class="chevron" id="chev-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="phase-body" id="body-2">
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Technologies</div>
+              <div class="tech-grid">
+                <span class="tech-chip">Node.js</span><span class="tech-chip">Express.js</span><span class="tech-chip">MongoDB</span>
+                <span class="tech-chip">REST APIs</span><span class="tech-chip">JWT Auth</span><span class="tech-chip">Redis</span>
+                <span class="tech-chip">WebSockets</span><span class="tech-chip">Multer</span><span class="tech-chip">Prisma</span>
+              </div>
+            </div>
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Learning Goals</div>
+              <ul class="proj-list">
+                <li>Build RESTful APIs with Express and Mongoose</li>
+                <li>Implement JWT authentication and refresh tokens</li>
+                <li>Database design, indexing, and aggregation</li>
+                <li>Caching strategies with Redis</li>
+                <li>Real-time features with Socket.io</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Milestone Projects</div>
+              <ul class="proj-list">
+                <li>Full Auth System (JWT + Refresh)</li>
+                <li>Blog REST API with Pagination</li>
+                <li>Real-time Chat Backend</li>
+                <li>E-Commerce API with Stripe</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-card" onclick="togglePhase(3)">
+          <div class="phase-header">
+            <div class="phase-info">
+              <div class="phase-num">Phase 3 · Month 6–8</div>
+              <div class="phase-title">DevOps & Cloud</div>
+              <div class="phase-meta">
+                <span class="meta-chip" style="background:rgba(139,92,246,.12);color:var(--violet)">Advanced</span>
+                <span class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted)">⏱ 280 hours</span>
+                <span class="meta-chip" style="background:rgba(16,185,129,.12);color:var(--emerald)">+$50k salary</span>
+              </div>
+            </div>
+            <svg class="chevron" id="chev-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="phase-body" id="body-3">
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Technologies</div>
+              <div class="tech-grid">
+                <span class="tech-chip">Linux CLI</span><span class="tech-chip">Docker</span><span class="tech-chip">Docker Compose</span>
+                <span class="tech-chip">Nginx</span><span class="tech-chip">AWS EC2/S3</span><span class="tech-chip">GitHub Actions</span>
+                <span class="tech-chip">CI/CD Pipelines</span><span class="tech-chip">SSL/HTTPS</span><span class="tech-chip">Monitoring</span>
+              </div>
+            </div>
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Learning Goals</div>
+              <ul class="proj-list">
+                <li>Containerize applications with Docker and Compose</li>
+                <li>Configure Nginx as a reverse proxy with SSL</li>
+                <li>Deploy to AWS EC2, RDS, S3, and CloudFront</li>
+                <li>Build CI/CD pipelines with GitHub Actions</li>
+                <li>Set up monitoring with PM2 and logging</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Milestone Projects</div>
+              <ul class="proj-list">
+                <li>Dockerized MERN App Deployment</li>
+                <li>AWS Production Architecture</li>
+                <li>Automated CI/CD Pipeline</li>
+                <li>Monitoring & Alerting Setup</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="phase">
+        <div class="phase-dot"></div>
+        <div class="phase-card" onclick="togglePhase(4)">
+          <div class="phase-header">
+            <div class="phase-info">
+              <div class="phase-num">Phase 4 · Month 9–12</div>
+              <div class="phase-title">Cybersecurity & Advanced Skills</div>
+              <div class="phase-meta">
+                <span class="meta-chip" style="background:rgba(212,175,55,.12);color:var(--gold)">Expert</span>
+                <span class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted)">⏱ 300 hours</span>
+                <span class="meta-chip" style="background:rgba(16,185,129,.12);color:var(--emerald)">+$60k salary</span>
+              </div>
+            </div>
+            <svg class="chevron" id="chev-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="phase-body" id="body-4">
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Technologies</div>
+              <div class="tech-grid">
+                <span class="tech-chip">HTTP/HTTPS</span><span class="tech-chip">OWASP Top 10</span><span class="tech-chip">XSS Prevention</span>
+                <span class="tech-chip">CSRF Tokens</span><span class="tech-chip">SQL Injection</span><span class="tech-chip">JWT Security</span>
+                <span class="tech-chip">Firewalls</span><span class="tech-chip">VPN/DNS</span><span class="tech-chip">Burp Suite</span>
+              </div>
+            </div>
+            <div style="margin-bottom:1rem">
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Learning Goals</div>
+              <ul class="proj-list">
+                <li>Understand and prevent OWASP Top 10 vulnerabilities</li>
+                <li>Implement secure authentication with MFA</li>
+                <li>Perform web security audits and penetration testing</li>
+                <li>Configure firewalls, VPNs, and network security</li>
+                <li>Build security checklists for production apps</li>
+              </ul>
+            </div>
+            <div>
+              <div style="font-size:.82rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Milestone Projects</div>
+              <ul class="proj-list">
+                <li>Secure Auth System with MFA</li>
+                <li>Web Security Audit Report</li>
+                <li>Vulnerability Scanner Tool</li>
+                <li>Production Security Hardening Guide</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer><strong>TechMaster Roadmap</strong> — 4 Phases · 1100+ Study Hours · 40+ Projects</footer>
+</div>
+
+<!-- PROJECTS PAGE -->
+<div id="page-projects" class="page">
+  <div class="section">
+    <div class="section-label">Portfolio Projects</div>
+    <div class="section-title">40+ Production-Ready Projects</div>
+    <div class="section-sub">Each project is designed to demonstrate real-world skills to employers. Build them, deploy them, and add them to your GitHub.</div>
+
+    <div style="margin-bottom:1.5rem;display:flex;gap:8px;flex-wrap:wrap" id="proj-filters">
+      <button class="meta-chip" style="background:rgba(212,175,55,.2);color:var(--gold);cursor:pointer;border:1px solid rgba(212,175,55,.3);padding:6px 14px;border-radius:8px;font-family:'DM Sans',sans-serif" onclick="filterProj('all',this)">All</button>
+      <button class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted);cursor:pointer;border:1px solid rgba(255,255,255,.1);padding:6px 14px;border-radius:8px;font-family:'DM Sans',sans-serif" onclick="filterProj('frontend',this)">Frontend</button>
+      <button class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted);cursor:pointer;border:1px solid rgba(255,255,255,.1);padding:6px 14px;border-radius:8px;font-family:'DM Sans',sans-serif" onclick="filterProj('backend',this)">Backend</button>
+      <button class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted);cursor:pointer;border:1px solid rgba(255,255,255,.1);padding:6px 14px;border-radius:8px;font-family:'DM Sans',sans-serif" onclick="filterProj('devops',this)">DevOps</button>
+      <button class="meta-chip" style="background:rgba(255,255,255,.06);color:var(--muted);cursor:pointer;border:1px solid rgba(255,255,255,.1);padding:6px 14px;border-radius:8px;font-family:'DM Sans',sans-serif" onclick="filterProj('security',this)">Security</button>
+    </div>
+
+    <div class="proj-cards" id="proj-grid"></div>
+  </div>
+  <footer><strong>TechMaster Roadmap</strong> — Build. Deploy. Get Hired.</footer>
+</div>
+
+<!-- INTERVIEW PAGE -->
+<div id="page-interview" class="page">
+  <div class="section">
+    <div class="section-label">Interview Preparation</div>
+    <div class="section-title">Crack Any Tech Interview</div>
+    <div class="section-sub">Real company-style questions with detailed answers. From beginner to senior level.</div>
+
+    <div class="qa-list" id="qa-list"></div>
+  </div>
+  <footer><strong>TechMaster Roadmap</strong> — Land Your Dream Role</footer>
+</div>
+
+<!-- CAREER PAGE -->
+<div id="page-career" class="page">
+  <div class="section">
+    <div class="section-label">Career Strategy</div>
+    <div class="section-title">From Zero to $120k+</div>
+    <div class="section-sub">A complete career launch strategy for developers — covering freelancing, remote jobs, startups, and corporate roles.</div>
+
+    <div class="career-path-grid" style="margin-bottom:3rem">
+      <div class="career-card">
+        <div class="icon">🌍</div>
+        <h3>Remote Jobs</h3>
+        <p>Land fully remote roles at US/EU companies earning $80k–$150k from anywhere in the world.</p>
+        <ul class="career-items">
+          <li>Optimize LinkedIn for US recruiters</li>
+          <li>Build public GitHub portfolio</li>
+          <li>Apply to Toptal, Turing, Remote.co</li>
+          <li>Ace async communication skills</li>
+          <li>Pass technical assessments</li>
+        </ul>
+      </div>
+      <div class="career-card">
+        <div class="icon">💼</div>
+        <h3>Startup Jobs</h3>
+        <p>Join early-stage startups with equity + salary. High growth, broad responsibilities, fast learning.</p>
+        <ul class="career-items">
+          <li>Target Series A/B startups</li>
+          <li>Showcase full-stack capabilities</li>
+          <li>Understand product thinking</li>
+          <li>Use AngelList, YC Job Board</li>
+          <li>Negotiate equity + salary</li>
+        </ul>
+      </div>
+      <div class="career-card">
+        <div class="icon">🎯</div>
+        <h3>Freelancing</h3>
+        <p>Build a freelance business earning $50–$150/hr. Work on your own terms with global clients.</p>
+        <ul class="career-items">
+          <li>Create a portfolio website</li>
+          <li>Start on Upwork, Toptal</li>
+          <li>Niche down (React + Node)</li>
+          <li>Build retainer clients</li>
+          <li>Scale to an agency</li>
+        </ul>
+      </div>
+      <div class="career-card">
+        <div class="icon">🏢</div>
+        <h3>Corporate / FAANG</h3>
+        <p>Target big tech with $150k–$300k+ packages including RSU, bonus, and premium benefits.</p>
+        <ul class="career-items">
+          <li>Master DSA on LeetCode</li>
+          <li>Practice system design</li>
+          <li>Referral network building</li>
+          <li>STAR method for behaviorals</li>
+          <li>Negotiate total compensation</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-label">Profile Optimization</div>
+    <div class="section-title">Stand Out to Recruiters</div>
+    <div class="cards-grid">
+      <div class="card c-blue">
+        <div class="card-icon" style="background:rgba(37,99,235,.15)">💼</div>
+        <h3>LinkedIn Strategy</h3>
+        <p>Keyword-optimize headline, About section, and skills. Enable "Open to Work" for remote roles. Post weekly about your learning journey.</p>
+      </div>
+      <div class="card c-emerald">
+        <div class="card-icon" style="background:rgba(16,185,129,.15)">🐙</div>
+        <h3>GitHub Portfolio</h3>
+        <p>Keep a consistent green contribution graph. Pin 6 best projects. Write excellent READMEs with screenshots and deployment links.</p>
+      </div>
+      <div class="card c-violet">
+        <div class="card-icon" style="background:rgba(139,92,246,.15)">📄</div>
+        <h3>Resume Building</h3>
+        <p>1-page, ATS-friendly format. Quantify everything ("Reduced load time by 40%"). Include GitHub and deployed project links.</p>
+      </div>
+    </div>
+  </div>
+  <footer><strong>TechMaster Roadmap</strong> — Build Your Dream Career</footer>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard" class="page">
+  <div class="section">
+    <div class="section-label">Personal Dashboard</div>
+    <div class="section-title">Your Learning Progress</div>
+    <div class="section-sub">Track your journey through the 12-month roadmap. Click to mark skills complete.</div>
+
+    <div class="dash-grid">
+      <div class="dash-stat"><div class="val" id="pct">0%</div><div class="sub">Overall Progress</div></div>
+      <div class="dash-stat"><div class="val" id="done-count">0</div><div class="sub">Skills Completed</div></div>
+      <div class="dash-stat"><div class="val">4</div><div class="sub">Phases Total</div></div>
+      <div class="dash-stat"><div class="val">40+</div><div class="sub">Projects Available</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
+        <div style="font-size:.85rem;font-weight:600;margin-bottom:1.25rem;color:var(--gold)">Skill Progress Tracker</div>
+        <div class="skill-bars" id="skill-bars"></div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
+        <div style="font-size:.85rem;font-weight:600;margin-bottom:1.25rem;color:var(--gold)">Checklist</div>
+        <div id="checklist" style="display:flex;flex-direction:column;gap:.5rem"></div>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
+      <div style="font-size:.85rem;font-weight:600;margin-bottom:1rem;color:var(--gold)">Daily Goal Tracker</div>
+      <div style="display:flex;gap:8px;margin-bottom:.75rem">
+        <input id="goal-input" type="text" placeholder="Add a daily goal..." style="flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none">
+        <button onclick="addGoal()" style="background:var(--gold);color:var(--navy);border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:600;font-family:'DM Sans',sans-serif">Add</button>
+      </div>
+      <div id="goals-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
+    </div>
+  </div>
+  <footer><strong>TechMaster Roadmap</strong> — Stay Consistent. Ship Daily.</footer>
+</div>
+
+<script>
+// PAGE NAVIGATION
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+  const links = document.querySelectorAll('.nav-link');
+  links.forEach(l => { if(l.textContent.toLowerCase().includes(id) || (id==='home' && l.textContent==='Home')) l.classList.add('active'); });
+}
+
+// PHASE TOGGLE
+function togglePhase(n) {
+  const body = document.getElementById('body-' + n);
+  const chev = document.getElementById('chev-' + n);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// PROJECTS DATA
+const projects = [
+  {cat:'frontend',emoji:'🎨',color:'#1e3a8a',title:'SaaS Landing Page',desc:'Premium marketing page with hero, features, pricing, and CTA sections.',stack:['HTML','CSS','JS'],diff:'Easy',time:'3 days'},
+  {cat:'frontend',emoji:'⚛️',color:'#0e7490',title:'React E-Commerce UI',desc:'Full storefront with product grid, cart, filters, and checkout flow.',stack:['React','Tailwind','Context'],diff:'Medium',time:'1 week'},
+  {cat:'frontend',emoji:'📊',color:'#1e3a8a',title:'AI Analytics Dashboard',desc:'Real-time data visualization dashboard with charts, KPIs, and dark theme.',stack:['Next.js','Recharts','Tailwind'],diff:'Medium',time:'1 week'},
+  {cat:'frontend',emoji:'🌐',color:'#0e7490',title:'Developer Portfolio',desc:'Animated personal portfolio with project showcase and contact form.',stack:['React','Framer Motion','CSS'],diff:'Easy',time:'4 days'},
+  {cat:'frontend',emoji:'📝',color:'#1e3a8a',title:'MDX Blog Platform',desc:'Full-featured blog with MDX rendering, categories, and RSS feed.',stack:['Next.js','MDX','Tailwind'],diff:'Medium',time:'1 week'},
+  {cat:'backend',emoji:'🔐',color:'#065f46',title:'JWT Auth System',desc:'Complete auth with register, login, refresh tokens, and password reset.',stack:['Node.js','Express','MongoDB','JWT'],diff:'Medium',time:'1 week'},
+  {cat:'backend',emoji:'💬',color:'#065f46',title:'Real-time Chat API',desc:'Scalable chat backend with rooms, typing indicators, and message history.',stack:['Node.js','Socket.io','Redis'],diff:'Hard',time:'2 weeks'},
+  {cat:'backend',emoji:'🛒',color:'#7c3aed',title:'E-Commerce Backend',desc:'Full API with products, cart, orders, payments, and admin endpoints.',stack:['Express','MongoDB','Stripe'],diff:'Hard',time:'2 weeks'},
+  {cat:'backend',emoji:'📰',color:'#065f46',title:'Blog REST API',desc:'Full CRUD blog API with auth, comments, pagination, and search.',stack:['Node.js','Express','MongoDB'],diff:'Medium',time:'1 week'},
+  {cat:'backend',emoji:'📁',color:'#7c3aed',title:'File Upload Service',desc:'Secure file upload API with S3 storage, virus scanning, and CDN.',stack:['Node.js','Multer','AWS S3'],diff:'Medium',time:'5 days'},
+  {cat:'devops',emoji:'🐳',color:'#4c1d95',title:'Dockerized MERN App',desc:'Full MERN stack containerized with Docker Compose and Nginx reverse proxy.',stack:['Docker','Nginx','MERN'],diff:'Medium',time:'1 week'},
+  {cat:'devops',emoji:'🚀',color:'#4c1d95',title:'AWS Production Deploy',desc:'Deploy Node.js app to EC2 with RDS, S3, CloudFront, and auto-scaling.',stack:['AWS','EC2','S3','CloudFront'],diff:'Hard',time:'2 weeks'},
+  {cat:'devops',emoji:'⚙️',color:'#4c1d95',title:'CI/CD Pipeline',desc:'Full GitHub Actions pipeline: test, build, lint, and deploy to production.',stack:['GitHub Actions','Docker','AWS'],diff:'Medium',time:'3 days'},
+  {cat:'devops',emoji:'📡',color:'#4c1d95',title:'Monitoring Stack',desc:'Server monitoring with PM2, custom alerts, and log aggregation dashboard.',stack:['PM2','Linux','Nginx'],diff:'Medium',time:'4 days'},
+  {cat:'security',emoji:'🔒',color:'#78350f',title:'Secure Auth with MFA',desc:'Multi-factor authentication system with TOTP, backup codes, and audit logs.',stack:['Node.js','Speakeasy','Redis'],diff:'Hard',time:'2 weeks'},
+  {cat:'security',emoji:'🕵️',color:'#78350f',title:'Security Audit Tool',desc:'Automated web app security scanner checking OWASP Top 10 vulnerabilities.',stack:['Node.js','Puppeteer'],diff:'Hard',time:'2 weeks'},
+  {cat:'security',emoji:'🛡️',color:'#78350f',title:'API Rate Limiter',desc:'Advanced rate limiting with IP tracking, burst protection, and DDoS mitigation.',stack:['Express','Redis','Node.js'],diff:'Medium',time:'4 days'},
+  {cat:'security',emoji:'🔑',color:'#78350f',title:'Password Vault API',desc:'Encrypted password manager API with AES-256 and zero-knowledge design.',stack:['Node.js','Crypto','MongoDB'],diff:'Hard',time:'2 weeks'},
+];
+
+function renderProjects(filter='all') {
+  const grid = document.getElementById('proj-grid');
+  const filtered = filter === 'all' ? projects : projects.filter(p => p.cat === filter);
+  grid.innerHTML = filtered.map(p => `
+    <div class="proj-card">
+      <div class="proj-card-img" style="background:${p.color}20;border-bottom:1px solid ${p.color}30">${p.emoji}</div>
+      <div class="proj-card-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+          <h3>${p.title}</h3>
+          <span class="diff-badge" style="background:${p.diff==='Easy'?'rgba(16,185,129,.15)':p.diff==='Medium'?'rgba(212,175,55,.15)':'rgba(239,68,68,.15)'};color:${p.diff==='Easy'?'#10b981':p.diff==='Medium'?'#d4af37':'#f87171'}">${p.diff}</span>
+        </div>
+        <p>${p.desc}</p>
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem">⏱ ${p.time}</div>
+        <div class="proj-tags">${p.stack.map(s => `<span class="proj-tag" style="background:${p.color}20;color:#93c5fd">${s}</span>`).join('')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterProj(cat, btn) {
+  document.querySelectorAll('#proj-filters button').forEach(b => {
+    b.style.background='rgba(255,255,255,.06)';b.style.color='var(--muted)';b.style.borderColor='rgba(255,255,255,.1)';
+  });
+  btn.style.background='rgba(212,175,55,.2)';btn.style.color='var(--gold)';btn.style.borderColor='rgba(212,175,55,.3)';
+  renderProjects(cat);
+}
+
+renderProjects();
+
+// INTERVIEW Q&A
+const qas = [
+  {cat:'Frontend',catColor:'#1e40af',catBg:'rgba(30,64,175,.15)',q:'What is the Virtual DOM and how does React use it?',a:'The Virtual DOM is a lightweight JavaScript representation of the actual DOM. React uses it to batch DOM updates efficiently. When state changes, React creates a new virtual DOM tree, diffs it against the previous one (reconciliation), and applies only the necessary changes to the real DOM — avoiding costly full re-renders. This is why React is fast for complex UIs.'},
+  {cat:'Frontend',catColor:'#1e40af',catBg:'rgba(30,64,175,.15)',q:'Explain CSS Flexbox vs Grid — when to use each?',a:'Flexbox is one-dimensional (row or column) — ideal for navigation bars, centering items, or arranging items in a single axis. Grid is two-dimensional (rows AND columns) — ideal for page layouts, dashboards, and card grids. Rule of thumb: use Flexbox for components, Grid for page-level layouts. They can also be combined.'},
+  {cat:'Backend',catColor:'#065f46',catBg:'rgba(6,95,70,.15)',q:'What is the difference between JWT and Session-based authentication?',a:'Sessions store auth state server-side (in memory or DB) and use a session ID cookie. They are stateful and require server memory. JWTs are stateless tokens containing claims, signed with a secret. They work great for distributed systems and mobile apps but cannot be easily revoked without a blacklist. Use sessions for traditional web apps, JWTs for APIs and microservices.'},
+  {cat:'Backend',catColor:'#065f46',catBg:'rgba(6,95,70,.15)',q:'How does Node.js handle concurrency if it\'s single-threaded?',a:'Node.js uses an event loop and non-blocking I/O to handle thousands of concurrent connections. When a request involves I/O (DB query, file read), Node delegates it to the OS via libuv, frees the event loop for other requests, and resumes via a callback when the I/O completes. CPU-intensive tasks still block — those should use Worker Threads.'},
+  {cat:'DevOps',catColor:'#4c1d95',catBg:'rgba(76,29,149,.15)',q:'What is the difference between a Docker image and a container?',a:'A Docker image is a read-only blueprint — it contains the OS, runtime, libraries, and your app code. A container is a running instance of an image. You can run many containers from one image. Images are built from Dockerfiles and stored in registries like Docker Hub. Containers are ephemeral — data is lost unless you use volumes.'},
+  {cat:'DevOps',catColor:'#4c1d95',catBg:'rgba(76,29,149,.15)',q:'What is a CI/CD pipeline and its stages?',a:'CI (Continuous Integration) automatically tests and builds code on every push. CD (Continuous Deployment) automatically deploys passing builds to production. Typical stages: 1) Trigger on push, 2) Install dependencies, 3) Run linting, 4) Run unit/integration tests, 5) Build Docker image, 6) Push to registry, 7) Deploy to server, 8) Run health checks.'},
+  {cat:'Security',catColor:'#78350f',catBg:'rgba(120,53,15,.15)',q:'What is XSS and how do you prevent it?',a:'Cross-Site Scripting (XSS) is when an attacker injects malicious JavaScript into a page that other users view. Prevention: 1) Never render user input as raw HTML — use textContent not innerHTML, 2) Use Content Security Policy (CSP) headers, 3) Sanitize inputs with libraries like DOMPurify, 4) Set HttpOnly and Secure cookie flags, 5) Encode outputs in templates (React does this automatically by default).'},
+  {cat:'Security',catColor:'#78350f',catBg:'rgba(120,53,15,.15)',q:'Explain SQL Injection and prevention strategies.',a:'SQL Injection is when an attacker inserts SQL code into an input field to manipulate DB queries. Example: entering `\' OR 1=1--` as a username to bypass login. Prevention: 1) Use parameterized queries / prepared statements (NEVER string concatenation), 2) Use an ORM like Sequelize or Prisma, 3) Validate and sanitize all inputs, 4) Apply least-privilege DB permissions.'},
+];
+
+function renderQAs() {
+  const list = document.getElementById('qa-list');
+  list.innerHTML = qas.map((q, i) => `
+    <div class="qa-item" onclick="toggleQA(${i})">
+      <div class="qa-q">
+        <span>${q.q}</span>
+        <span class="cat-badge" style="background:${q.catBg};color:${q.catColor}">${q.cat}</span>
+      </div>
+      <div class="qa-a" id="qa-${i}">${q.a}</div>
+    </div>
+  `).join('');
+}
+
+function toggleQA(i) {
+  document.getElementById('qa-' + i).classList.toggle('open');
+}
+
+renderQAs();
+
+// DASHBOARD
+const skills = [
+  {name:'HTML/CSS',pct:0,color:'#3b82f6'},
+  {name:'JavaScript',pct:0,color:'#f59e0b'},
+  {name:'React',pct:0,color:'#06b6d4'},
+  {name:'Node.js',pct:0,color:'#10b981'},
+  {name:'MongoDB',pct:0,color:'#10b981'},
+  {name:'Docker',pct:0,color:'#8b5cf6'},
+  {name:'AWS',pct:0,color:'#f97316'},
+  {name:'Security',pct:0,color:'#d4af37'},
+];
+
+const checklist = [
+  'Set up development environment',
+  'Complete HTML/CSS fundamentals',
+  'Build first React project',
+  'Create REST API with Express',
+  'Deploy to cloud (AWS/Vercel)',
+  'Dockerize a full-stack app',
+  'Set up CI/CD pipeline',
+  'Complete security audit checklist',
+];
+
+let progress = JSON.parse(localStorage.getItem('tm-progress') || '{}');
+let goals = JSON.parse(localStorage.getItem('tm-goals') || '[]');
+
+function saveProgress() {
+  localStorage.setItem('tm-progress', JSON.stringify(progress));
+  updateDashboard();
+}
+
+function updateDashboard() {
+  const done = Object.values(progress).filter(Boolean).length;
+  const total = checklist.length;
+  const pct = Math.round((done/total)*100);
+  document.getElementById('pct').textContent = pct + '%';
+  document.getElementById('done-count').textContent = done;
+}
+
+function renderSkillBars() {
+  const bars = document.getElementById('skill-bars');
+  bars.innerHTML = skills.map((s,i) => {
+    const p = progress['skill-'+i] || 0;
+    return `
+    <div class="skill-bar-row">
+      <div class="skill-bar-label">
+        <span style="font-size:.8rem">${s.name}</span>
+        <span style="font-size:.78rem;color:var(--muted)">${p}%</span>
+      </div>
+      <div class="skill-bar-track">
+        <div class="skill-bar-fill" style="width:${p}%;background:${s.color}" id="fill-${i}"></div>
+      </div>
+      <input type="range" min="0" max="100" value="${p}" style="width:100%;margin-top:2px;accent-color:${s.color}" oninput="updateSkill(${i},this.value)">
+    </div>`;
+  }).join('');
+}
+
+function updateSkill(i, val) {
+  progress['skill-'+i] = parseInt(val);
+  document.getElementById('fill-' + i).style.width = val + '%';
+  document.getElementById('fill-' + i).parentElement.previousElementSibling.lastElementChild.textContent = val + '%';
+  saveProgress();
+}
+
+function renderChecklist() {
+  const el = document.getElementById('checklist');
+  el.innerHTML = checklist.map((item,i) => `
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.82rem;color:${progress['check-'+i]?'var(--muted)':'var(--text)'};text-decoration:${progress['check-'+i]?'line-through':''};padding:4px 0">
+      <input type="checkbox" ${progress['check-'+i]?'checked':''} onchange="toggleCheck(${i})" style="accent-color:var(--gold);width:14px;height:14px;cursor:pointer">
+      ${item}
+    </label>
+  `).join('');
+}
+
+function toggleCheck(i) {
+  progress['check-'+i] = !progress['check-'+i];
+  saveProgress();
+  renderChecklist();
+}
+
+function renderGoals() {
+  const el = document.getElementById('goals-list');
+  if (!goals.length) { el.innerHTML = '<span style="font-size:.8rem;color:var(--muted)">No goals yet. Add one above!</span>'; return; }
+  el.innerHTML = goals.map((g,i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,.04);border-radius:8px">
+      <input type="checkbox" ${g.done?'checked':''} onchange="toggleGoal(${i})" style="accent-color:var(--gold);cursor:pointer">
+      <span style="flex:1;font-size:.82rem;color:${g.done?'var(--muted)':'var(--text)'};text-decoration:${g.done?'line-through':''}">${g.text}</span>
+      <button onclick="deleteGoal(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 2px">×</button>
+    </div>
+  `).join('');
+}
+
+function addGoal() {
+  const input = document.getElementById('goal-input');
+  if (!input.value.trim()) return;
+  goals.push({text:input.value.trim(),done:false});
+  input.value = '';
+  localStorage.setItem('tm-goals', JSON.stringify(goals));
+  renderGoals();
+}
+
+function toggleGoal(i) {
+  goals[i].done = !goals[i].done;
+  localStorage.setItem('tm-goals', JSON.stringify(goals));
+  renderGoals();
+}
+
+function deleteGoal(i) {
+  goals.splice(i,1);
+  localStorage.setItem('tm-goals', JSON.stringify(goals));
+  renderGoals();
+}
+
+document.getElementById('goal-input').addEventListener('keydown', e => { if(e.key==='Enter') addGoal(); });
+
+renderSkillBars();
+renderChecklist();
+renderGoals();
+updateDashboard();
+</script>
+</body>
+</html>
