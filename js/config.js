@@ -33,6 +33,7 @@
       { id: "data-ai", label: "Data & AI" },
       { id: "career", label: "Career" },
       { id: "dashboard", label: "Dashboard" },
+      { id: "chest", label: "Chest" },
     ],
     XP_PER_LESSON: 25,
     XP_PER_PROJECT: 120,

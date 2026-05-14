@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DSA Practice â€” TechMaster Chest</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0A192F;--gold:#D4AF37;--gold2:#b8961f;--bg:#020617;--text:#e2e8f0;--muted:#94a3b8;--border:rgba(212,175,55,0.18);--card:rgba(14,30,54,0.8);--emerald:#10b981}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+h1,h2,h3{font-family:'Syne',sans-serif}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 1.25rem;height:64px;background:rgba(2,6,23,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--gold);cursor:pointer}
+.nav-logo svg{width:28px;height:28px}
+.nav-back{background:none;border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:none;align-items:center;justify-content:center;transition:.2s}
+.nav-back:hover{border-color:rgba(212,175,55,.45);color:var(--gold)}
+.nav-back.show{display:flex}
+.nav-left{display:flex;align-items:center;gap:6px}
+.nav-chest-back{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer;font-size:.75rem;font-family:'DM Sans',sans-serif;transition:.2s;white-space:nowrap}
+.nav-chest-back:hover{border-color:rgba(212,175,55,.45);color:var(--gold)}
+.container{max-width:1000px;margin:0 auto;padding:6rem 1.25rem 2rem}
+.section-title{font-size:1.75rem;margin-bottom:.5rem}
+.sub{color:var(--muted);margin-bottom:2rem}
+.progress-bar{height:4px;background:rgba(255,255,255,.06);border-radius:4px;margin-bottom:1.5rem;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--emerald));border-radius:4px;transition:width .4s ease;width:0}
+.stats-bar{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
+.stat-card{flex:1;min-width:90px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center}
+.stat-num{font-size:1.05rem;font-weight:700;display:block}
+.stat-label{font-size:.68rem;color:var(--muted);display:block;margin-top:2px}
+.stat-label.done{color:var(--emerald)}
+.diff-chart{display:flex;width:100%;height:6px;border-radius:4px;overflow:hidden;gap:3px;margin-top:10px}
+.diff-bar{height:100%;border-radius:3px;transition:width .4s ease}
+.diff-bar-e{background:var(--emerald)}
+.diff-bar-m{background:var(--gold)}
+.diff-bar-h{background:#f87171}
+.topic-cheat{margin-bottom:1rem}
+.cheat-toggle{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'DM Sans',sans-serif;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;transition:.2s}
+.cheat-toggle:hover{border-color:rgba(212,175,55,.3);color:var(--text)}
+.cheat-toggle.open{color:var(--gold);border-color:rgba(212,175,55,.25);border-radius:8px 8px 0 0}
+.cheat-body{display:none;background:var(--card);border:1px solid var(--border);border-top:0;border-radius:0 0 8px 8px;padding:12px 16px;font-size:.78rem;line-height:1.7;color:var(--muted)}
+.cheat-body.open{display:block}
+.cheat-body code{background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;font-size:.75rem;color:var(--gold)}
+.cheat-body pre{background:rgba(0,0,0,.3);padding:8px 12px;border-radius:6px;overflow-x:auto;margin:6px 0;font-size:.72rem;color:#e2e8f0;white-space:pre-wrap}
+.cheat-body strong{color:var(--text)}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1rem}
+.topic-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem;cursor:pointer;transition:all .25s}
+.topic-card:hover{border-color:rgba(212,175,55,.35);transform:translateY(-2px)}
+.topic-card h3{font-size:.95rem;margin-bottom:.35rem}
+.topic-card p{font-size:.8rem;color:var(--muted);line-height:1.6}
+.topic-card .tag{display:inline-block;margin-top:.75rem;font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(212,175,55,.12);color:var(--gold)}
+.topic-card .tag.done{background:rgba(16,185,129,.12);color:var(--emerald)}
+#topic-view{display:none}
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--gold);cursor:pointer;font-size:.85rem;margin-bottom:1.25rem;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+.back-link:hover{text-decoration:underline}
+.topic-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+.topic-head h2{margin-bottom:0}
+.filter-bar{display:flex;gap:8px;align-items:center}
+.filter-bar select{padding:6px 28px 6px 12px;border-radius:6px;border:1px solid var(--border);background:#0b1224;color:var(--text);font-size:.78rem;font-family:'DM Sans',sans-serif;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.problem-list{display:flex;flex-direction:column;gap:8px}
+.problem-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;transition:all .2s}
+.problem-item.done{opacity:.6}
+.problem-item.done .problem-title{text-decoration:line-through;color:var(--muted)}
+.problem-check{width:18px;height:18px;accent-color:var(--gold);cursor:pointer;flex-shrink:0}
+.problem-info{flex:1;min-width:0}
+.problem-title{font-size:.85rem;font-weight:600;margin-bottom:2px}
+.problem-desc{font-size:.72rem;color:var(--muted);line-height:1.4}
+.problem-diff{display:inline-block;font-size:.65rem;font-weight:700;padding:1px 8px;border-radius:4px;margin-top:3px}
+.diff-E{background:rgba(16,185,129,.15);color:var(--emerald)}
+.diff-M{background:rgba(212,175,55,.15);color:var(--gold)}
+.diff-H{background:rgba(239,68,68,.15);color:#f87171}
+.problem-links{display:flex;gap:6px;flex-shrink:0}
+.problem-links a{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;font-size:.68rem;font-weight:600;text-decoration:none;transition:.2s;white-space:nowrap}
+.lc-link{background:rgba(212,175,55,.12);color:var(--gold);border:1px solid rgba(212,175,55,.25)}
+.lc-link:hover{background:rgba(212,175,55,.2)}
+.gfg-link{background:rgba(16,185,129,.12);color:var(--emerald);border:1px solid rgba(16,185,129,.25)}
+.gfg-link:hover{background:rgba(16,185,129,.2)}
+footer{text-align:center;padding:2rem;color:var(--muted);font-size:.75rem}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <button type="button" class="nav-back" id="navBack" aria-label="Back to topics">←</button>
+    <button type="button" class="nav-chest-back" id="chestBack" aria-label="Back to Chest">← Chest</button>
+  </div>
+  <div class="nav-logo" id="logoHome">
+    <svg viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" stroke="#D4AF37" stroke-width="1.5"/><path d="M7 14L12 9L17 14L22 9" stroke="#D4AF37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 19L12 14L17 19L22 14" stroke="#D4AF37" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/></svg>
+    DSA Practice
+  </div>
+</nav>
+<div class="container" id="app">
+  <div id="grid-view">
+    <h1 class="section-title">Data Structures &amp; Algorithms</h1>
+    <p class="sub">Pick a topic to view curated problems. Mark them done as you progress.</p>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="stats-bar" id="statsBar"></div>
+    <div class="topic-grid" id="topicGrid"></div>
+  </div>
+  <div id="topic-view">
+    <button type="button" class="back-link" id="backBtn">← Back to topics</button>
+    <div class="topic-head">
+      <h2 id="topicTitle"></h2>
+      <div class="filter-bar">
+        <select id="diffFilter"><option value="all">All</option><option value="E">Easy</option><option value="M">Medium</option><option value="H">Hard</option></select>
+      </div>
+    </div>
+    <div class="topic-cheat" id="topicCheat">
+      <button class="cheat-toggle" id="cheatToggle">Show patterns &amp; cheat sheet ▼</button>
+      <div class="cheat-body" id="cheatBody"></div>
+    </div>
+    <div class="problem-list" id="problemList"></div>
+  </div>
+</div>
+<footer><strong>TechMaster Chest</strong> â€” DSA practice hub.</footer>
+<script>
+(function(){
+  var STORE_KEY = "tm-dsa-progress";
+  var data = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+  function save(){localStorage.setItem(STORE_KEY, JSON.stringify(data))}
+
+  var diff = {E:"Easy",M:"Medium",H:"Hard"};
+
+  var TOPICS = [
+    {id:"arrays", title:"Arrays & Hashing", desc:"Two-sum, subarray sums, sliding window, prefix sums.",
+     cheat:"<strong>What is it?</strong> Arrays store elements in contiguous memory; hashing uses key-value maps for O(1) lookups and frequency counting.<br><strong>Why it matters</strong> Foundational for DSA; array patterns unlock sliding window, prefix sum, and two-pointer techniques. HashMap reduces O(n) search to O(1).<br><strong>Real-world uses</strong> Database indexing, caching, frequency analysis, search autocomplete, data aggregation.<br><strong>Key Patterns:</strong> HashMap for lookups, prefix sum for range queries, sliding window for contiguous subarrays, two-pointer for sorted arrays.<br><strong>Common Functions & Methods:</strong> <code>Map</code>/<code>Set</code> for frequency counting, <code>sort()</code> for ordering, <code>fill()</code> for initialization, <code>slice()</code>/<code>splice()</code> for subarrays, <code>reduce()</code>/<code>map()</code>/<code>filter()</code> for transformations.<br><strong>Code Templates:</strong> <pre>// HashMap frequency\nlet map = new Map();\nfor(let n of arr) map.set(n,(map.get(n)||0)+1);\n// Prefix sum\nlet pre=[0];\nfor(let n of arr) pre.push(pre.at(-1)+n);\n// sum l..r = pre[r+1]-pre[l]\n// Sliding window\nlet l=0, sum=0;\nfor(let r=0; r<arr.length; r++){\n  sum+=arr[r];\n  while(sum>target) sum-=arr[l++];\n  if(sum===target) res.push([l,r]);\n}</pre>",
+     problems:[
+       {t:"Two Sum", d:"Find indices of two numbers that add to target.", l:"E", lc:"https://leetcode.com/problems/two-sum/", gf:"https://www.geeksforgeeks.org/two-sum-check-pair-with-given-sum/"},
+       {t:"Contains Duplicate", d:"Check if any value appears at least twice.", l:"E", lc:"https://leetcode.com/problems/contains-duplicate/", gf:"https://www.geeksforgeeks.org/find-duplicates-in-on-time-and-constant-extra-space/"},
+       {t:"Valid Anagram", d:"Check if two strings are anagrams.", l:"E", lc:"https://leetcode.com/problems/valid-anagram/", gf:"https://www.geeksforgeeks.org/check-whether-two-strings-are-anagram-of-each-other/"},
+       {t:"Best Time to Buy and Sell Stock", d:"Max profit from one transaction.", l:"E", lc:"https://leetcode.com/problems/best-time-to-buy-and-sell-stock/", gf:"https://www.geeksforgeeks.org/best-time-to-buy-and-sell-stock/"},
+       {t:"Majority Element", d:"Find element appearing more than n/2 times.", l:"E", lc:"https://leetcode.com/problems/majority-element/", gf:"https://www.geeksforgeeks.org/majority-element/"},
+       {t:"Remove Duplicates from Sorted Array", d:"Remove duplicates in-place.", l:"E", lc:"https://leetcode.com/problems/remove-duplicates-from-sorted-array/", gf:"https://www.geeksforgeeks.org/remove-duplicates-sorted-array/"},
+       {t:"Move Zeroes", d:"Shift zeroes to end maintaining order.", l:"E", lc:"https://leetcode.com/problems/move-zeroes/", gf:"https://www.geeksforgeeks.org/move-zeroes-end-array/"},
+       {t:"Maximum Subarray", d:"Find subarray with largest sum.", l:"M", lc:"https://leetcode.com/problems/maximum-subarray/", gf:"https://www.geeksforgeeks.org/largest-sum-contiguous-subarray/"},
+       {t:"Product of Array Except Self", d:"Product of array except current index.", l:"M", lc:"https://leetcode.com/problems/product-of-array-except-self/", gf:"https://www.geeksforgeeks.org/a-product-array-puzzle/"},
+       {t:"Group Anagrams", d:"Group strings that are anagrams.", l:"M", lc:"https://leetcode.com/problems/group-anagrams/", gf:"https://www.geeksforgeeks.org/given-a-sequence-of-words-print-all-anagrams-together/"},
+       {t:"Top K Frequent Elements", d:"Return k most frequent elements.", l:"M", lc:"https://leetcode.com/problems/top-k-frequent-elements/", gf:"https://www.geeksforgeeks.org/find-k-numbers-occurrences-given-array/"},
+       {t:"3Sum", d:"Find triplets that sum to zero.", l:"M", lc:"https://leetcode.com/problems/3sum/", gf:"https://www.geeksforgeeks.org/find-all-triplets-with-zero-sum/"},
+       {t:"Longest Consecutive Sequence", d:"Find longest consecutive elements sequence.", l:"M", lc:"https://leetcode.com/problems/longest-consecutive-sequence/", gf:"https://www.geeksforgeeks.org/longest-consecutive-subsequence/"},
+       {t:"Sort Colors", d:"Sort 0s,1s,2s in-place.", l:"M", lc:"https://leetcode.com/problems/sort-colors/", gf:"https://www.geeksforgeeks.org/sort-an-array-of-0s-1s-and-2s/"},
+       {t:"Subarray Sum Equals K", d:"Count subarrays summing to k.", l:"M", lc:"https://leetcode.com/problems/subarray-sum-equals-k/", gf:"https://www.geeksforgeeks.org/number-subarrays-sum-exactly-equal-k/"},
+       {t:"Maximum Product Subarray", d:"Find subarray with max product.", l:"M", lc:"https://leetcode.com/problems/maximum-product-subarray/", gf:"https://www.geeksforgeeks.org/maximum-product-subarray/"},
+       {t:"Find the Duplicate Number", d:"Find duplicate without extra space.", l:"M", lc:"https://leetcode.com/problems/find-the-duplicate-number/", gf:"https://www.geeksforgeeks.org/find-duplicates-in-on-time-and-constant-extra-space/"},
+       {t:"Set Matrix Zeroes", d:"Set entire row/col to zero.", l:"M", lc:"https://leetcode.com/problems/set-matrix-zeroes/", gf:"https://www.geeksforgeeks.org/set-matrix-zeroes/"},
+       {t:"Spiral Matrix", d:"Return matrix in spiral order.", l:"M", lc:"https://leetcode.com/problems/spiral-matrix/", gf:"https://www.geeksforgeeks.org/print-a-given-matrix-in-spiral-form/"},
+       {t:"Rotate Image", d:"Rotate NxN matrix 90 degrees.", l:"M", lc:"https://leetcode.com/problems/rotate-image/", gf:"https://www.geeksforgeeks.org/rotate-a-matrix-by-90-degree-in-clockwise-direction-without-using-any-extra-space/"},
+       {t:"First Missing Positive", d:"Find smallest missing positive.", l:"H", lc:"https://leetcode.com/problems/first-missing-positive/", gf:"https://www.geeksforgeeks.org/find-the-smallest-positive-number-missing-from-an-unsorted-array/"},
+       {t:"Longest Substring Without Repeating", d:"Length of longest substring with unique chars.", l:"M", lc:"https://leetcode.com/problems/longest-substring-without-repeating-characters/", gf:"https://www.geeksforgeeks.org/length-of-the-longest-substring-without-repeating-characters/"},
+       {t:"Sliding Window Maximum", d:"Maximum in every sliding window.", l:"H", lc:"https://leetcode.com/problems/sliding-window-maximum/", gf:"https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/"},
+       {t:"Minimum Window Substring", d:"Smallest window with all chars.", l:"H", lc:"https://leetcode.com/problems/minimum-window-substring/", gf:"https://www.geeksforgeeks.org/find-the-smallest-window-in-a-string-containing-all-characters-of-another-string/"},
+       {t:"Largest Rectangle in Histogram", d:"Largest rectangle area under histogram.", l:"H", lc:"https://leetcode.com/problems/largest-rectangle-in-histogram/", gf:"https://www.geeksforgeeks.org/largest-rectangle-under-histogram/"},
+       {t:"Maximal Rectangle", d:"Largest rectangle of 1s in binary matrix.", l:"H", lc:"https://leetcode.com/problems/maximal-rectangle/", gf:"https://www.geeksforgeeks.org/maximum-size-rectangle-binary-sub-matrix-1s/"},
+       {t:"Median of Two Sorted Arrays", d:"Median of two sorted arrays.", l:"H", lc:"https://leetcode.com/problems/median-of-two-sorted-arrays/", gf:"https://www.geeksforgeeks.org/median-of-two-sorted-arrays-of-different-sizes/"},
+       {t:"Merge Intervals", d:"Merge overlapping intervals.", l:"M", lc:"https://leetcode.com/problems/merge-intervals/", gf:"https://www.geeksforgeeks.org/merging-intervals/"},
+       {t:"Meeting Rooms II", d:"Minimum meeting rooms required.", l:"M", lc:"https://leetcode.com/problems/meeting-rooms-ii/", gf:"https://www.geeksforgeeks.org/minimum-number-of-platforms-required-for-a-railway-station/"},
+       {t:"Non-overlapping Intervals", d:"Remove min intervals to make non-overlapping.", l:"M", lc:"https://leetcode.com/problems/non-overlapping-intervals/", gf:"https://www.geeksforgeeks.org/find-non-overlapping-intervals-among-a-given-set-of-intervals/"},
+       {t:"Insert Interval", d:"Insert interval into sorted intervals.", l:"M", lc:"https://leetcode.com/problems/insert-interval/", gf:"https://www.geeksforgeeks.org/insert-in-sorted-and-non-overlapping-interval-array/"},
+       {t:"Gas Station", d:"Start from which station?", l:"M", lc:"https://leetcode.com/problems/gas-station/", gf:"https://www.geeksforgeeks.org/find-a-tour-that-visits-all-stations/"},
+       {t:"Jump Game", d:"Can you reach last index?", l:"M", lc:"https://leetcode.com/problems/jump-game/", gf:"https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/"},
+       {t:"Jump Game II", d:"Minimum jumps to reach end.", l:"H", lc:"https://leetcode.com/problems/jump-game-ii/", gf:"https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/"},
+       {t:"Candy", d:"Minimum candies to distribute.", l:"H", lc:"https://leetcode.com/problems/candy/", gf:"https://www.geeksforgeeks.org/minimum-candies-distribute-problem/"},
+       {t:"Missing Number", d:"Find missing number in 0..n.", l:"E", lc:"https://leetcode.com/problems/missing-number/", gf:"https://www.geeksforgeeks.org/find-the-missing-number/"},
+       {t:"Find All Numbers Disappeared", d:"Find missing numbers in array.", l:"E", lc:"https://leetcode.com/problems/find-all-numbers-disappeared-in-an-array/", gf:"https://www.geeksforgeeks.org/find-all-numbers-disappeared-in-an-array/"},
+       {t:"Single Number", d:"Find element appearing once.", l:"E", lc:"https://leetcode.com/problems/single-number/", gf:"https://www.geeksforgeeks.org/find-element-appears-array-every-element-appears-twice/"},
+       {t:"Plus One", d:"Add 1 to array of digits.", l:"E", lc:"https://leetcode.com/problems/plus-one/", gf:"https://www.geeksforgeeks.org/plus-one/"},
+       {t:"Pascal's Triangle", d:"Generate Pascal triangle rows.", l:"E", lc:"https://leetcode.com/problems/pascals-triangle/", gf:"https://www.geeksforgeeks.org/pascal-triangle/"},
+       {t:"Summary Ranges", d:"Return ranges of consecutive nums.", l:"E", lc:"https://leetcode.com/problems/summary-ranges/", gf:"https://www.geeksforgeeks.org/find-consecutive-ranges-from-a-given-array/"},
+       {t:"Contains Duplicate II", d:"Duplicates within k distance.", l:"E", lc:"https://leetcode.com/problems/contains-duplicate-ii/", gf:"https://www.geeksforgeeks.org/check-given-array-contains-duplicate-elements-within-k-distance/"},
+       {t:"Maximum Average Subarray I", d:"Max avg subarray of size k.", l:"E", lc:"https://leetcode.com/problems/maximum-average-subarray-i/", gf:"https://www.geeksforgeeks.org/find-maximum-average-subarray-of-k-size/"},
+       {t:"Range Sum Query Immutable", d:"Sum range queries on array.", l:"E", lc:"https://leetcode.com/problems/range-sum-query-immutable/", gf:"https://www.geeksforgeeks.org/range-sum-query-using-array/"},
+       {t:"Find Pivot Index", d:"Index where left sum equals right.", l:"E", lc:"https://leetcode.com/problems/find-pivot-index/", gf:"https://www.geeksforgeeks.org/find-element-array-sum-left-equal-sum-right/"},
+       {t:"Next Permutation", d:"Next lexicographic permutation.", l:"M", lc:"https://leetcode.com/problems/next-permutation/", gf:"https://www.geeksforgeeks.org/next-permutation/"},
+       {t:"Increasing Triplet Subsequence", d:"Increasing triplet exists?", l:"M", lc:"https://leetcode.com/problems/increasing-triplet-subsequence/", gf:"https://www.geeksforgeeks.org/increasing-triplet-subsequence/"},
+       {t:"Minimum Size Subarray Sum", d:"Min subarray len sum>=target.", l:"M", lc:"https://leetcode.com/problems/minimum-size-subarray-sum/", gf:"https://www.geeksforgeeks.org/minimum-length-subarray-sum-greater-given-value/"},
+       {t:"Continuous Subarray Sum", d:"Subarray sum multiple of k.", l:"M", lc:"https://leetcode.com/problems/continuous-subarray-sum/", gf:"https://www.geeksforgeeks.org/find-subarray-with-given-sum-in-array-of-integers/"},
+       {t:"Maximum Points from Cards", d:"Max points picking from ends.", l:"M", lc:"https://leetcode.com/problems/maximum-points-you-can-obtain-from-cards/", gf:"https://www.geeksforgeeks.org/maximum-sum-such-that-no-two-elements-are-adjacent/"},
+       {t:"Valid Sudoku", d:"Check if Sudoku board valid.", l:"M", lc:"https://leetcode.com/problems/valid-sudoku/", gf:"https://www.geeksforgeeks.org/check-if-given-sudoku-board-is-valid/"},
+       {t:"Max Consecutive Ones", d:"Max consecutive 1s in array.", l:"E", lc:"https://leetcode.com/problems/max-consecutive-ones/", gf:"https://www.geeksforgeeks.org/maximum-consecutive-ones-in-a-binary-array/"},
+       {t:"Sort Array by Parity", d:"Move evens to front.", l:"E", lc:"https://leetcode.com/problems/sort-array-by-parity/", gf:"https://www.geeksforgeeks.org/segregate-even-and-odd-numbers/"},
+       {t:"Relative Sort Array", d:"Sort by order of second array.", l:"E", lc:"https://leetcode.com/problems/relative-sort-array/", gf:"https://www.geeksforgeeks.org/sort-array-according-order-defined-another-array/"},
+       {t:"Monotonic Array", d:"Check if array monotonic.", l:"E", lc:"https://leetcode.com/problems/monotonic-array/", gf:"https://www.geeksforgeeks.org/check-if-given-array-is-monotonic/"}
+     ]},
+    {id:"two-pointers", title:"Two Pointers", desc:"Sorted arrays, cycle detection, container with most water.",
+      cheat:"<strong>What is it?</strong> Two pointers traverse data structure with two references, moving toward or away from each other based on conditions.<br><strong>Why it matters</strong> Reduces O(n^2) brute force to O(n) for many array/string problems; essential for sorted array manipulation and cycle detection.<br><strong>Real-world uses</strong> String palindrome validation, memory defragmentation, merging sorted data streams, network packet inspection.<br><strong>Key Patterns:</strong> Opposite pointers from both ends (sorted arrays), slow/fast pointers (cycle detection), sliding window with two pointers.<br><strong>Common Functions & Methods:</strong> <code>while(l<r)</code> loop for opposite pointers, <code>while(fast && fast.next)</code> for slow/fast, <code>while(r < arr.length)</code> for sliding window.<br><strong>Code Templates:</strong> <pre>// Opposite ends - pair sum\nlet l=0, r=arr.length-1;\nwhile(l<r){\n  let sum=arr[l]+arr[r];\n  if(sum===target) return [l,r];\n  sum<target ? l++ : r--;\n}\n// Slow/fast - cycle detection\nlet slow=head, fast=head;\nwhile(fast && fast.next){\n  slow=slow.next;\n  fast=fast.next.next;\n  if(slow===fast) return true;\n}\nreturn false;</pre>",
+     problems:[
+       {t:"Valid Palindrome", d:"Check if a string is a palindrome.", l:"E", lc:"https://leetcode.com/problems/valid-palindrome/", gf:"https://www.geeksforgeeks.org/c-program-check-given-string-palindrome/"},
+       {t:"Two Sum II (Sorted)", d:"Two sum in sorted array.", l:"M", lc:"https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/", gf:"https://www.geeksforgeeks.org/given-sorted-array-number-x-find-pair-whose-sum-closest-x/"},
+       {t:"3Sum", d:"Find triplets that sum to zero.", l:"M", lc:"https://leetcode.com/problems/3sum/", gf:"https://www.geeksforgeeks.org/find-all-triplets-with-zero-sum/"},
+       {t:"3Sum Closest", d:"Find triplet sum closest to target.", l:"M", lc:"https://leetcode.com/problems/3sum-closest/", gf:"https://www.geeksforgeeks.org/find-a-triplet-in-an-array-whose-sum-is-closest-to-a-given-number/"},
+       {t:"Container With Most Water", d:"Max water container.", l:"M", lc:"https://leetcode.com/problems/container-with-most-water/", gf:"https://www.geeksforgeeks.org/container-with-most-water/"},
+       {t:"Remove Duplicates from Sorted Array", d:"Remove duplicates in-place.", l:"E", lc:"https://leetcode.com/problems/remove-duplicates-from-sorted-array/", gf:"https://www.geeksforgeeks.org/remove-duplicates-sorted-array/"},
+       {t:"Move Zeroes", d:"Shift zeroes to end maintaining order.", l:"E", lc:"https://leetcode.com/problems/move-zeroes/", gf:"https://www.geeksforgeeks.org/move-zeroes-end-array/"},
+       {t:"Trapping Rain Water", d:"Water trapped between bars.", l:"H", lc:"https://leetcode.com/problems/trapping-rain-water/", gf:"https://www.geeksforgeeks.org/trapping-rain-water/"},
+       {t:"Sort Colors", d:"Sort 0s,1s,2s in-place.", l:"M", lc:"https://leetcode.com/problems/sort-colors/", gf:"https://www.geeksforgeeks.org/sort-an-array-of-0s-1s-and-2s/"},
+       {t:"4Sum", d:"Find quadruplets summing to target.", l:"M", lc:"https://leetcode.com/problems/4sum/", gf:"https://www.geeksforgeeks.org/find-four-elements-that-sum-to-a-given-value-set-2/"},
+       {t:"Backspace String Compare", d:"Compare strings with backspace.", l:"E", lc:"https://leetcode.com/problems/backspace-string-compare/", gf:"https://www.geeksforgeeks.org/backspace-string-compare/"},
+       {t:"Subarray Product Less Than K", d:"Count subarrays with product < k.", l:"M", lc:"https://leetcode.com/problems/subarray-product-less-than-k/", gf:"https://www.geeksforgeeks.org/number-subarrays-product-less-k/"},
+       {t:"Longest Repeating Character Replacement", d:"Longest substring with same character after k replacements.", l:"M", lc:"https://leetcode.com/problems/longest-repeating-character-replacement/", gf:"https://www.geeksforgeeks.org/longest-substring-without-repeating-characters/"},
+       {t:"Fruit Into Baskets", d:"Max fruits from two baskets.", l:"M", lc:"https://leetcode.com/problems/fruit-into-baskets/", gf:"https://www.geeksforgeeks.org/fruit-into-baskets/"},
+       {t:"Permutation in String", d:"Check if permutation exists as substring.", l:"M", lc:"https://leetcode.com/problems/permutation-in-string/", gf:"https://www.geeksforgeeks.org/check-if-a-string-is-a-permutation-of-a-given-string/"},
+       {t:"Minimum Window Substring", d:"Smallest window with all chars.", l:"H", lc:"https://leetcode.com/problems/minimum-window-substring/", gf:"https://www.geeksforgeeks.org/find-the-smallest-window-in-a-string-containing-all-characters-of-another-string/"},
+       {t:"Longest Substring Without Repeating", d:"Length of longest substring with unique chars.", l:"M", lc:"https://leetcode.com/problems/longest-substring-without-repeating-characters/", gf:"https://www.geeksforgeeks.org/length-of-the-longest-substring-without-repeating-characters/"},
+       {t:"Reverse String", d:"Reverse a string in-place.", l:"E", lc:"https://leetcode.com/problems/reverse-string/", gf:"https://www.geeksforgeeks.org/reverse-a-string/"},
+       {t:"Squares of a Sorted Array", d:"Squares of sorted array.", l:"E", lc:"https://leetcode.com/problems/squares-of-a-sorted-array/", gf:"https://www.geeksforgeeks.org/squares-of-a-sorted-array/"},
+       {t:"Reverse Vowels of a String", d:"Reverse vowels in string.", l:"E", lc:"https://leetcode.com/problems/reverse-vowels-of-a-string/", gf:"https://www.geeksforgeeks.org/reverse-vowels-of-a-string/"},
+       {t:"Merge Sorted Array", d:"Merge two sorted arrays.", l:"E", lc:"https://leetcode.com/problems/merge-sorted-array/", gf:"https://www.geeksforgeeks.org/merge-two-sorted-arrays/"},
+       {t:"Rotate Array", d:"Rotate array by k steps.", l:"M", lc:"https://leetcode.com/problems/rotate-array/", gf:"https://www.geeksforgeeks.org/rotate-an-array-by-k-positions/"},
+       {t:"Interval List Intersections", d:"Intersection of interval lists.", l:"M", lc:"https://leetcode.com/problems/interval-list-intersections/", gf:"https://www.geeksforgeeks.org/intersection-of-two-intervals/"},
+       {t:"Max Number of K-Sum Pairs", d:"Max pairs summing to k.", l:"M", lc:"https://leetcode.com/problems/max-number-of-k-sum-pairs/", gf:"https://www.geeksforgeeks.org/count-pairs-with-given-sum/"},
+       {t:"Boats to Save People", d:"Min boats to save people.", l:"M", lc:"https://leetcode.com/problems/boats-to-save-people/", gf:"https://www.geeksforgeeks.org/boats-to-save-people/"}
+     ]},
+    {id:"stack-queue", title:"Stack & Queue", desc:"Valid parentheses, min stack, monotonic stack.",
+      cheat:"<strong>What is it?</strong> Stack is LIFO (last-in-first-out); queue is FIFO (first-in-first-out). Deque supports both ends.<br><strong>Why it matters</strong> Stack enables undo/redo, expression evaluation, and monotonic patterns. Queue enables BFS, task scheduling, and buffering.<br><strong>Real-world uses</strong> Browser history (stack), print spooler (queue), call stack in recursion, sliding window max (deque), undo in editors.<br><strong>Key Patterns:</strong> Monotonic stack (next greater element), stack for parentheses matching, queue for BFS, deque for sliding window maximum.<br><strong>Common Functions & Methods:</strong> <code>push()</code>/<code>pop()</code> for stacks, queue via index pointers (avoids O(n) shift), <code>Array(length).fill()</code> for circular queue.<br><strong>Code Templates:</strong> <pre>// Monotonic decreasing stack\nlet stack = [];\nfor(let n of arr){\n  while(stack.length && n>stack[stack.length-1])\n    stack.pop();\n  stack.push(n);\n}\n// Queue with pointers\nlet q=[], head=0;\nq.push(val);\nlet front=q[head++];\n// BFS\nlet q=[root], seen=new Set();\nwhile(q.length){\n  let n=q.shift();\n  for(let nei of n.neighbors)\n    if(!seen.has(nei)){seen.add(nei);q.push(nei);}\n}</pre>",
+     problems:[
+       {t:"Valid Parentheses", d:"Check if bracket string is valid.", l:"E", lc:"https://leetcode.com/problems/valid-parentheses/", gf:"https://www.geeksforgeeks.org/check-for-balanced-parentheses-in-an-expression/"},
+       {t:"Min Stack", d:"Stack that supports getMin.", l:"M", lc:"https://leetcode.com/problems/min-stack/", gf:"https://www.geeksforgeeks.org/design-a-stack-that-supports-getmin-in-o1-time-and-o1-extra-space/"},
+       {t:"Evaluate Reverse Polish Notation", d:"Evaluate postfix expression.", l:"M", lc:"https://leetcode.com/problems/evaluate-reverse-polish-notation/", gf:"https://www.geeksforgeeks.org/evaluate-the-value-of-an-arithmetic-expression-in-reverse-polish-notation/"},
+       {t:"Daily Temperatures", d:"Days until warmer temperature.", l:"M", lc:"https://leetcode.com/problems/daily-temperatures/", gf:"https://www.geeksforgeeks.org/daily-temperatures/"},
+       {t:"Car Fleet", d:"Number of car fleets.", l:"M", lc:"https://leetcode.com/problems/car-fleet/", gf:"https://www.geeksforgeeks.org/car-fleet/"},
+       {t:"Largest Rectangle in Histogram", d:"Largest rectangle in histogram.", l:"H", lc:"https://leetcode.com/problems/largest-rectangle-in-histogram/", gf:"https://www.geeksforgeeks.org/largest-rectangle-under-histogram/"},
+       {t:"Remove Duplicate Letters", d:"Remove duplicates for smallest lexicographic order.", l:"M", lc:"https://leetcode.com/problems/remove-duplicate-letters/", gf:"https://www.geeksforgeeks.org/remove-duplicate-characters-from-a-string/"},
+       {t:"Implement Queue using Stacks", d:"Queue using two stacks.", l:"E", lc:"https://leetcode.com/problems/implement-queue-using-stacks/", gf:"https://www.geeksforgeeks.org/queue-using-stacks/"},
+       {t:"Count Subarrays With Score", d:"Monotonic stack style count.", l:"M", lc:"https://leetcode.com/problems/count-submatrices-with-equal-frequency/", gf:"https://www.geeksforgeeks.org/number-of-subarrays-with-maximum-values-in-given-range/"},
+       {t:"Next Greater Element I", d:"Find next greater element.", l:"E", lc:"https://leetcode.com/problems/next-greater-element-i/", gf:"https://www.geeksforgeeks.org/next-greater-element/"},
+       {t:"Next Greater Element II", d:"Next greater element in circular array.", l:"M", lc:"https://leetcode.com/problems/next-greater-element-ii/", gf:"https://www.geeksforgeeks.org/next-greater-element-in-a-circular-array/"},
+       {t:"Asteroid Collision", d:"Simulate asteroid collisions.", l:"M", lc:"https://leetcode.com/problems/asteroid-collision/", gf:"https://www.geeksforgeeks.org/asteroid-collision/"},
+       {t:"Simplify Path", d:"Simplify Unix file path.", l:"M", lc:"https://leetcode.com/problems/simplify-path/", gf:"https://www.geeksforgeeks.org/simplify-path-directory/"},
+       {t:"Decode String", d:"Decode encoded string with patterns.", l:"M", lc:"https://leetcode.com/problems/decode-string/", gf:"https://www.geeksforgeeks.org/decode-string/"},
+       {t:"Maximal Rectangle", d:"Largest rectangle of 1s.", l:"H", lc:"https://leetcode.com/problems/maximal-rectangle/", gf:"https://www.geeksforgeeks.org/maximum-size-rectangle-binary-sub-matrix-1s/"},
+       {t:"Sliding Window Maximum", d:"Maximum in every window.", l:"H", lc:"https://leetcode.com/problems/sliding-window-maximum/", gf:"https://www.geeksforgeeks.org/sliding-window-maximum-maximum-of-all-subarrays-of-size-k/"},
+       {t:"Build Array with Stack Ops", d:"Build array via stack ops.", l:"M", lc:"https://leetcode.com/problems/build-an-array-with-stack-operations/", gf:"https://www.geeksforgeeks.org/build-an-array-with-stack-operations/"},
+       {t:"Baseball Game", d:"Sum of baseball game scores.", l:"E", lc:"https://leetcode.com/problems/baseball-game/", gf:"https://www.geeksforgeeks.org/baseball-game/"},
+       {t:"Remove All Adjacent Duplicates II", d:"Remove k adjacent duplicates.", l:"M", lc:"https://leetcode.com/problems/remove-all-adjacent-duplicates-in-string-ii/", gf:"https://www.geeksforgeeks.org/remove-adjacent-duplicates-string-ii/"},
+       {t:"Online Stock Span", d:"Stock span for each price.", l:"M", lc:"https://leetcode.com/problems/online-stock-span/", gf:"https://www.geeksforgeeks.org/stock-span-problem-using-stack/"},
+       {t:"Remove K Digits", d:"Remove k digits for smallest number.", l:"M", lc:"https://leetcode.com/problems/remove-k-digits/", gf:"https://www.geeksforgeeks.org/remove-k-digits-to-make-the-smallest-number/"},
+       {t:"Validate Stack Sequences", d:"Check if stack sequences valid.", l:"M", lc:"https://leetcode.com/problems/validate-stack-sequences/", gf:"https://www.geeksforgeeks.org/stack-permutations-check-if-an-array-is-stack-permutation-of-other/"},
+       {t:"Sum of Subarray Minimums", d:"Sum of mins of all subarrays.", l:"M", lc:"https://leetcode.com/problems/sum-of-subarray-minimums/", gf:"https://www.geeksforgeeks.org/sum-of-minimum-elements-of-all-subarrays/"},
+       {t:"Make The String Great", d:"Remove adjacent bad pairs.", l:"E", lc:"https://leetcode.com/problems/make-the-string-great/", gf:"https://www.geeksforgeeks.org/remove-adjacent-duplicates-string/"},
+       {t:"Minimum Add to Make Parentheses Valid", d:"Min add to fix parentheses.", l:"M", lc:"https://leetcode.com/problems/minimum-add-to-make-parentheses-valid/", gf:"https://www.geeksforgeeks.org/minimum-number-of-bracket-reversals-needed-to-make-expression-balanced/"}
+     ]},
+    {id:"binary-search", title:"Binary Search", desc:"Classic binary search, rotated array, 2D matrix.",
+      cheat:"<strong>What is it?</strong> Binary search halves the search space each iteration by comparing target to the middle element of a sorted range.<br><strong>Why it matters</strong> O(log n) vs O(n) linear search; enables fast search in sorted data and is adaptable to answer-space problems (minimize max, etc).<br><strong>Real-world uses</strong> Dictionary lookup, database B-tree indexing, debugging (git bisect), network routing tables, game number guessing.<br><strong>Key Patterns:</strong> Find exact target, find leftmost/rightmost insertion point, search in rotated array, binary search on answer space.<br><strong>Common Functions & Methods:</strong> <code>Math.floor()</code>/<code>Math.ceil()</code> for mid, <code>while(l<=r)</code> vs <code>while(l<r)</code> variants, <code>l=mid+1</code> / <code>r=mid-1</code> for exclusion.<br><strong>Code Templates:</strong> <pre>// Standard binary search\nlet l=0, r=arr.length-1;\nwhile(l<=r){\n  let m = l + Math.floor((r-l)/2);\n  if(arr[m]===target) return m;\n  arr[m]<target ? l=m+1 : r=m-1;\n}\nreturn -1;\n// Leftmost insertion (lower bound)\nwhile(l<r){\n  let m = l + Math.floor((r-l)/2);\n  arr[m]<target ? l=m+1 : r=m;\n}\nreturn l;</pre>",
+     problems:[
+       {t:"Binary Search", d:"Find target in sorted array.", l:"E", lc:"https://leetcode.com/problems/binary-search/", gf:"https://www.geeksforgeeks.org/binary-search/"},
+       {t:"Search Insert Position", d:"Find insert position in sorted array.", l:"E", lc:"https://leetcode.com/problems/search-insert-position/", gf:"https://www.geeksforgeeks.org/search-insert-position-of-k-in-a-sorted-array/"},
+       {t:"First Bad Version", d:"Find first bad version.", l:"E", lc:"https://leetcode.com/problems/first-bad-version/", gf:"https://www.geeksforgeeks.org/find-first-bad-version/"},
+       {t:"Find Smallest Letter Greater Than Target", d:"Smallest letter greater than target.", l:"E", lc:"https://leetcode.com/problems/find-smallest-letter-greater-than-target/", gf:"https://www.geeksforgeeks.org/smallest-letter-greater-than-target/"},
+       {t:"Search in Rotated Sorted Array", d:"Search in rotated sorted array.", l:"M", lc:"https://leetcode.com/problems/search-in-rotated-sorted-array/", gf:"https://www.geeksforgeeks.org/search-an-element-in-a-sorted-and-pivoted-array/"},
+       {t:"Find First and Last Position", d:"First and last position of target.", l:"M", lc:"https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/", gf:"https://www.geeksforgeeks.org/find-first-and-last-positions-of-an-element-in-a-sorted-array/"},
+       {t:"Find Minimum in Rotated Sorted Array", d:"Min in rotated sorted array.", l:"M", lc:"https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/", gf:"https://www.geeksforgeeks.org/find-minimum-element-in-a-sorted-and-rotated-array/"},
+       {t:"Kth Smallest in Sorted Matrix", d:"Kth smallest in row-col sorted matrix.", l:"M", lc:"https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/", gf:"https://www.geeksforgeeks.org/kth-smallest-element-in-a-row-wise-and-column-wise-sorted-2d-array/"},
+       {t:"Find Peak Element", d:"Find a peak in array.", l:"M", lc:"https://leetcode.com/problems/find-peak-element/", gf:"https://www.geeksforgeeks.org/find-a-peak-in-a-given-array/"},
+       {t:"Search a 2D Matrix", d:"Search in row-col sorted matrix.", l:"M", lc:"https://leetcode.com/problems/search-a-2d-matrix/", gf:"https://www.geeksforgeeks.org/search-in-row-wise-and-column-wise-sorted-matrix/"},
+       {t:"Search a 2D Matrix II", d:"Search in row-col sorted matrix (optimized).", l:"M", lc:"https://leetcode.com/problems/search-a-2d-matrix-ii/", gf:"https://www.geeksforgeeks.org/search-in-row-wise-and-column-wise-sorted-matrix/"},
+       {t:"Time Based Key-Value Store", d:"Retrieve value by timestamp.", l:"M", lc:"https://leetcode.com/problems/time-based-key-value-store/", gf:"https://www.geeksforgeeks.org/time-based-key-value-store/"},
+       {t:"Median of Two Sorted Arrays", d:"Median of two sorted arrays.", l:"H", lc:"https://leetcode.com/problems/median-of-two-sorted-arrays/", gf:"https://www.geeksforgeeks.org/median-of-two-sorted-arrays-of-different-sizes/"},
+       {t:"Split Array Largest Sum", d:"Split array to minimize largest sum.", l:"H", lc:"https://leetcode.com/problems/split-array-largest-sum/", gf:"https://www.geeksforgeeks.org/split-array-largest-sum/"},
+       {t:"Koko Eating Bananas", d:"Min rate to eat bananas in H hours.", l:"M", lc:"https://leetcode.com/problems/koko-eating-bananas/", gf:"https://www.geeksforgeeks.org/koko-eating-bananas/"},
+       {t:"Find Minimum in Rotated Sorted Array II", d:"Min in rotated array with duplicates.", l:"H", lc:"https://leetcode.com/problems/find-minimum-in-rotated-sorted-array-ii/", gf:"https://www.geeksforgeeks.org/find-minimum-element-in-a-sorted-and-rotated-array-with-duplicates/"},
+       {t:"Guess Number Higher or Lower", d:"Guess number with hints.", l:"E", lc:"https://leetcode.com/problems/guess-number-higher-or-lower/", gf:"https://www.geeksforgeeks.org/guess-number-higher-lower/"},
+       {t:"Arranging Coins", d:"Complete rows of coins.", l:"E", lc:"https://leetcode.com/problems/arranging-coins/", gf:"https://www.geeksforgeeks.org/find-number-of-rows-in-a-triangular-staircase-which-can-be-formed-with-n-coins/"},
+       {t:"Capacity to Ship Packages", d:"Min capacity to ship in D days.", l:"M", lc:"https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/", gf:"https://www.geeksforgeeks.org/capacity-to-ship-packages-within-d-days/"},
+       {t:"Find Right Interval", d:"Find interval with min start>=end.", l:"M", lc:"https://leetcode.com/problems/find-right-interval/", gf:"https://www.geeksforgeeks.org/find-right-interval/"},
+       {t:"Random Pick with Weight", d:"Pick index by weight.", l:"M", lc:"https://leetcode.com/problems/random-pick-with-weight/", gf:"https://www.geeksforgeeks.org/random-pick-with-weight/"},
+       {t:"Find K Closest Elements", d:"K closest elements to x.", l:"M", lc:"https://leetcode.com/problems/find-k-closest-elements/", gf:"https://www.geeksforgeeks.org/find-k-closest-elements-given-value/"},
+       {t:"Single Element in Sorted Array", d:"Single element in sorted array.", l:"M", lc:"https://leetcode.com/problems/single-element-in-a-sorted-array/", gf:"https://www.geeksforgeeks.org/find-the-element-that-appears-once-in-a-sorted-array/"},
+       {t:"Maximum Profit Job Scheduling", d:"Max profit non-overlap jobs.", l:"H", lc:"https://leetcode.com/problems/maximum-profit-in-job-scheduling/", gf:"https://www.geeksforgeeks.org/weighted-job-scheduling/"},
+       {t:"H-Index II", d:"H-index from sorted citations.", l:"M", lc:"https://leetcode.com/problems/h-index-ii/", gf:"https://www.geeksforgeeks.org/h-index-find-the-largest-number-h-such-that-there-are-at-least-h-papers-with-h-citations/"},
+       {t:"Minimum Limit of Balls in a Bag", d:"Minimize max balls per bag.", l:"M", lc:"https://leetcode.com/problems/minimum-limit-of-balls-in-a-bag/", gf:"https://www.geeksforgeeks.org/minimize-the-maximum-difference-between-the-heights/"}
+     ]},
+    {id:"linked-list", title:"Linked List", desc:"Reverse, merge, detect cycle, LRU cache.",
+      cheat:"<strong>What is it?</strong> Linked list is a linear collection where each node points to the next (singly) or prev/next (doubly).<br><strong>Why it matters</strong> Dynamic size, O(1) insert/delete at head vs array O(n) shift; teaches pointer manipulation crucial for advanced DS.<br><strong>Real-world uses</strong> LRU cache, undo functionality, image viewer (previous/next), music playlist, browser history, file system allocation.<br><strong>Key Patterns:</strong> Dummy node for head modifications, slow/fast pointer for cycle/middle, reverse in-place, merge two lists, runner technique.<br><strong>Common Functions & Methods:</strong> <code>new ListNode()</code> for node creation, pointer manipulation for insert/delete, dummy head to avoid edge cases.<br><strong>Code Templates:</strong> <pre>// Reverse linked list\nlet prev = null, curr = head;\nwhile(curr){\n  let next = curr.next;\n  curr.next = prev;\n  prev = curr;\n  curr = next;\n}\nreturn prev;\n// Find middle\nlet slow=head, fast=head;\nwhile(fast && fast.next){\n  slow=slow.next;\n  fast=fast.next.next;\n}\nreturn slow;</pre>",
+     problems:[
+       {t:"Reverse Linked List", d:"Reverse a singly linked list.", l:"E", lc:"https://leetcode.com/problems/reverse-linked-list/", gf:"https://www.geeksforgeeks.org/reverse-a-linked-list/"},
+       {t:"Merge Two Sorted Lists", d:"Merge two sorted linked lists.", l:"E", lc:"https://leetcode.com/problems/merge-two-sorted-lists/", gf:"https://www.geeksforgeeks.org/merge-two-sorted-linked-lists/"},
+       {t:"Linked List Cycle", d:"Detect cycle in a linked list.", l:"E", lc:"https://leetcode.com/problems/linked-list-cycle/", gf:"https://www.geeksforgeeks.org/detect-loop-in-a-linked-list/"},
+       {t:"Middle of the Linked List", d:"Find middle of linked list.", l:"E", lc:"https://leetcode.com/problems/middle-of-the-linked-list/", gf:"https://www.geeksforgeeks.org/write-a-c-function-to-print-the-middle-of-the-linked-list/"},
+       {t:"Remove Duplicates from Sorted List", d:"Remove duplicates from sorted list.", l:"E", lc:"https://leetcode.com/problems/remove-duplicates-from-sorted-list/", gf:"https://www.geeksforgeeks.org/remove-duplicates-from-a-sorted-linked-list/"},
+       {t:"Intersection of Two Linked Lists", d:"Find intersection node of two lists.", l:"E", lc:"https://leetcode.com/problems/intersection-of-two-linked-lists/", gf:"https://www.geeksforgeeks.org/write-a-function-to-get-the-intersection-point-of-two-linked-lists/"},
+       {t:"Palindrome Linked List", d:"Check if linked list is palindrome.", l:"E", lc:"https://leetcode.com/problems/palindrome-linked-list/", gf:"https://www.geeksforgeeks.org/function-to-check-if-a-singly-linked-list-is-palindrome/"},
+       {t:"Remove Nth Node From End", d:"Remove nth node from end.", l:"M", lc:"https://leetcode.com/problems/remove-nth-node-from-end-of-list/", gf:"https://www.geeksforgeeks.org/delete-nth-node-from-the-end-of-the-given-linked-list/"},
+       {t:"Add Two Numbers", d:"Add two numbers as linked lists.", l:"M", lc:"https://leetcode.com/problems/add-two-numbers/", gf:"https://www.geeksforgeeks.org/add-two-numbers-represented-by-linked-lists/"},
+       {t:"Reorder List", d:"Reorder L0â†’Lnâ†’L1â†’Ln-1â€¦", l:"M", lc:"https://leetcode.com/problems/reorder-list/", gf:"https://www.geeksforgeeks.org/rearrange-a-given-linked-list-in-place/"},
+       {t:"Copy List with Random Pointer", d:"Deep copy with random pointers.", l:"M", lc:"https://leetcode.com/problems/copy-list-with-random-pointer/", gf:"https://www.geeksforgeeks.org/clone-linked-list-next-arbit-pointer-set-2/"},
+       {t:"Swap Nodes in Pairs", d:"Swap adjacent nodes.", l:"M", lc:"https://leetcode.com/problems/swap-nodes-in-pairs/", gf:"https://www.geeksforgeeks.org/swap-nodes-in-a-linked-list-without-swapping-data/"},
+       {t:"Odd Even Linked List", d:"Group odd-indexed then even-indexed.", l:"M", lc:"https://leetcode.com/problems/odd-even-linked-list/", gf:"https://www.geeksforgeeks.org/rearrange-a-linked-list-such-that-all-even-and-odd-positioned-nodes-are-together/"},
+       {t:"Rotate List", d:"Rotate linked list by k places.", l:"M", lc:"https://leetcode.com/problems/rotate-list/", gf:"https://www.geeksforgeeks.org/rotate-a-linked-list/"},
+       {t:"Sort List", d:"Sort a linked list in O(n log n).", l:"M", lc:"https://leetcode.com/problems/sort-list/", gf:"https://www.geeksforgeeks.org/merge-sort-for-linked-list/"},
+       {t:"LRU Cache", d:"Design LRU cache.", l:"M", lc:"https://leetcode.com/problems/lru-cache/", gf:"https://www.geeksforgeeks.org/design-a-data-structure-for-lru-cache/"},
+       {t:"Merge k Sorted Lists", d:"Merge K sorted linked lists.", l:"H", lc:"https://leetcode.com/problems/merge-k-sorted-lists/", gf:"https://www.geeksforgeeks.org/merge-k-sorted-linked-lists/"},
+       {t:"Reverse Nodes in k-Group", d:"Reverse nodes in groups of k.", l:"H", lc:"https://leetcode.com/problems/reverse-nodes-in-k-group/", gf:"https://www.geeksforgeeks.org/reverse-a-list-in-groups-of-given-size/"},
+       {t:"LFU Cache", d:"Design LFU cache.", l:"H", lc:"https://leetcode.com/problems/lfu-cache/", gf:"https://www.geeksforgeeks.org/least-frequently-used-lfu-cache-implementation/"},
+       {t:"Delete Node in a Linked List", d:"Delete given node.", l:"M", lc:"https://leetcode.com/problems/delete-node-in-a-linked-list/", gf:"https://www.geeksforgeeks.org/delete-a-node-in-a-linked-list/"},
+       {t:"Remove Linked List Elements", d:"Remove nodes with given value.", l:"E", lc:"https://leetcode.com/problems/remove-linked-list-elements/", gf:"https://www.geeksforgeeks.org/remove-linked-list-elements/"},
+       {t:"Design Linked List", d:"Design singly/doubly linked list.", l:"M", lc:"https://leetcode.com/problems/design-linked-list/", gf:"https://www.geeksforgeeks.org/design-linked-list/"},
+       {t:"Linked List Cycle II", d:"Find cycle start node.", l:"M", lc:"https://leetcode.com/problems/linked-list-cycle-ii/", gf:"https://www.geeksforgeeks.org/find-first-node-of-loop-in-a-linked-list/"},
+       {t:"Add Two Numbers II", d:"Add numbers (no reverse).", l:"M", lc:"https://leetcode.com/problems/add-two-numbers-ii/", gf:"https://www.geeksforgeeks.org/add-two-numbers-ii/"},
+       {t:"Split Linked List in Parts", d:"Split list into k parts.", l:"M", lc:"https://leetcode.com/problems/split-linked-list-in-parts/", gf:"https://www.geeksforgeeks.org/split-a-given-linked-list-into-k-parts/"},
+       {t:"Remove Zero Sum Consecutive", d:"Remove zero-sum consecutive nodes.", l:"M", lc:"https://leetcode.com/problems/remove-zero-sum-consecutive-nodes-from-linked-list/", gf:"https://www.geeksforgeeks.org/remove-zero-sum-consecutive-nodes-from-linked-list/"},
+       {t:"Flatten Multilevel DLL", d:"Flatten multilevel doubly linked list.", l:"M", lc:"https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/", gf:"https://www.geeksforgeeks.org/flatten-a-multilevel-doubly-linked-list/"},
+       {t:"Design Browser History", d:"Design browser back/forward.", l:"M", lc:"https://leetcode.com/problems/design-browser-history/", gf:"https://www.geeksforgeeks.org/design-browser-history/"},
+       {t:"Convert Binary in LL to Int", d:"Convert binary linked list to int.", l:"E", lc:"https://leetcode.com/problems/convert-binary-number-in-a-linked-list-to-integer/", gf:"https://www.geeksforgeeks.org/convert-binary-number-in-a-linked-list-to-integer/"}
+     ]},
+    {id:"trees", title:"Trees", desc:"DFS, BFS, BST, LCA, serialization.",
+      cheat:"<strong>What is it?</strong> Tree is a hierarchical structure with nodes; each node has children. BST, binary tree, N-ary tree, trie variants.<br><strong>Why it matters</strong> Trees model hierarchical data; DFS/BFS traversals are the most common interview patterns. BST enables O(log n) search/insert/delete.<br><strong>Real-world uses</strong> File system directories, HTML DOM, compilers (AST), network routing, database indexes (B-trees), decision trees in ML.<br><strong>Key Patterns:</strong> DFS recursion (pre/in/post-order), BFS level-order, BST property (left<root<right), LCA recursion, path sum patterns, serialize/deserialize.<br><strong>Common Functions & Methods:</strong> Recursive traversal, queue for BFS, stack for iterative DFS, <code>Math.max()</code> for height calculation.<br><strong>Code Templates:</strong> <pre>// DFS inorder (recursive)\nfunction dfs(node){\n  if(!node) return;\n  dfs(node.left);\n  visit(node.val);\n  dfs(node.right);\n}\n// BFS level-order\nlet q=[root];\nwhile(q.length){\n  let len=q.length, level=[];\n  for(let i=0;i<len;i++){\n    let n=q.shift();\n    level.push(n.val);\n    if(n.left) q.push(n.left);\n    if(n.right) q.push(n.right);\n  }\n  res.push(level);\n}\nreturn res;</pre>",
+     problems:[
+       {t:"Maximum Depth of Binary Tree", d:"Find max depth.", l:"E", lc:"https://leetcode.com/problems/maximum-depth-of-binary-tree/", gf:"https://www.geeksforgeeks.org/find-the-maximum-depth-or-height-of-a-tree/"},
+       {t:"Invert Binary Tree", d:"Mirror a binary tree.", l:"E", lc:"https://leetcode.com/problems/invert-binary-tree/", gf:"https://www.geeksforgeeks.org/write-an-efficient-c-function-to-convert-a-tree-into-its-mirror-tree/"},
+       {t:"Same Tree", d:"Check if two trees are identical.", l:"E", lc:"https://leetcode.com/problems/same-tree/", gf:"https://www.geeksforgeeks.org/write-c-code-to-determine-if-two-trees-are-identical/"},
+       {t:"Subtree of Another Tree", d:"Check if subtree exists.", l:"E", lc:"https://leetcode.com/problems/subtree-of-another-tree/", gf:"https://www.geeksforgeeks.org/check-if-a-binary-tree-is-subtree-of-another-binary-tree/"},
+       {t:"Range Sum of BST", d:"Sum of values in range.", l:"E", lc:"https://leetcode.com/problems/range-sum-of-bst/", gf:"https://www.geeksforgeeks.org/range-sum-of-bst/"},
+       {t:"Balanced Binary Tree", d:"Check if tree is height-balanced.", l:"E", lc:"https://leetcode.com/problems/balanced-binary-tree/", gf:"https://www.geeksforgeeks.org/how-to-determine-if-a-binary-tree-is-balanced/"},
+       {t:"Minimum Depth of Binary Tree", d:"Find min depth.", l:"E", lc:"https://leetcode.com/problems/minimum-depth-of-binary-tree/", gf:"https://www.geeksforgeeks.org/find-minimum-depth-of-a-binary-tree/"},
+       {t:"Diameter of Binary Tree", d:"Longest path between nodes.", l:"E", lc:"https://leetcode.com/problems/diameter-of-binary-tree/", gf:"https://www.geeksforgeeks.org/diameter-of-a-binary-tree/"},
+       {t:"Lowest Common Ancestor (BST)", d:"LCA in a BST.", l:"M", lc:"https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/", gf:"https://www.geeksforgeeks.org/lowest-common-ancestor-in-a-binary-search-tree/"},
+       {t:"Validate Binary Search Tree", d:"Check if tree is a valid BST.", l:"M", lc:"https://leetcode.com/problems/validate-binary-search-tree/", gf:"https://www.geeksforgeeks.org/a-program-to-check-if-a-binary-tree-is-bst-or-not/"},
+       {t:"Binary Tree Level Order Traversal", d:"Level-order traversal.", l:"M", lc:"https://leetcode.com/problems/binary-tree-level-order-traversal/", gf:"https://www.geeksforgeeks.org/level-order-tree-traversal/"},
+       {t:"Binary Tree Zigzag Level Order", d:"Zigzag level-order traversal.", l:"M", lc:"https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/", gf:"https://www.geeksforgeeks.org/level-order-traversal-in-spiral-form/"},
+       {t:"Kth Smallest in BST", d:"Kth smallest element in BST.", l:"M", lc:"https://leetcode.com/problems/kth-smallest-element-in-a-bst/", gf:"https://www.geeksforgeeks.org/find-k-th-smallest-element-in-bst-order-statistics-in-bst/"},
+       {t:"Construct Binary Tree from Preorder & Inorder", d:"Build tree from traversals.", l:"M", lc:"https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/", gf:"https://www.geeksforgeeks.org/construct-a-binary-tree-from-postorder-and-inorder/"},
+       {t:"Binary Tree Right Side View", d:"Right side view of tree.", l:"M", lc:"https://leetcode.com/problems/binary-tree-right-side-view/", gf:"https://www.geeksforgeeks.org/print-right-view-of-a-binary-tree/"},
+       {t:"Count Good Nodes in Binary Tree", d:"Count nodes where path has all â‰¤ node.", l:"M", lc:"https://leetcode.com/problems/count-good-nodes-in-binary-tree/", gf:"https://www.geeksforgeeks.org/count-good-nodes-in-binary-tree/"},
+       {t:"Path Sum III", d:"Count paths summing to target.", l:"M", lc:"https://leetcode.com/problems/path-sum-iii/", gf:"https://www.geeksforgeeks.org/number-of-paths-with-given-sum-in-a-binary-tree/"},
+       {t:"Flatten Binary Tree to Linked List", d:"Flatten tree to right-skewed list.", l:"M", lc:"https://leetcode.com/problems/flatten-binary-tree-to-linked-list/", gf:"https://www.geeksforgeeks.org/flatten-a-binary-tree-into-linked-list/"},
+       {t:"Serialize and Deserialize Binary Tree", d:"Encode/decode a binary tree.", l:"H", lc:"https://leetcode.com/problems/serialize-and-deserialize-binary-tree/", gf:"https://www.geeksforgeeks.org/serialize-deserialize-binary-tree/"},
+       {t:"Binary Tree Maximum Path Sum", d:"Max path sum between nodes.", l:"H", lc:"https://leetcode.com/problems/binary-tree-maximum-path-sum/", gf:"https://www.geeksforgeeks.org/find-maximum-path-sum-in-a-binary-tree/"},
+       {t:"Recover Binary Search Tree", d:"Swap two misordered nodes.", l:"H", lc:"https://leetcode.com/problems/recover-binary-search-tree/", gf:"https://www.geeksforgeeks.org/fix-two-swapped-nodes-of-bst/"},
+       {t:"Word Ladder II", d:"All shortest transformation sequences.", l:"H", lc:"https://leetcode.com/problems/word-ladder-ii/", gf:"https://www.geeksforgeeks.org/word-ladder-ii/"},
+       {t:"Path Sum", d:"Check if root-leaf path sums to target.", l:"E", lc:"https://leetcode.com/problems/path-sum/", gf:"https://www.geeksforgeeks.org/find-if-there-is-a-path-from-root-to-a-given-node-in-a-bst/"},
+       {t:"Symmetric Tree", d:"Check if tree is mirror of itself.", l:"E", lc:"https://leetcode.com/problems/symmetric-tree/", gf:"https://www.geeksforgeeks.org/symmetric-tree-check-if-a-tree-is-mirror-of-itself/"},
+       {t:"Merge Two Binary Trees", d:"Merge two trees node-wise.", l:"E", lc:"https://leetcode.com/problems/merge-two-binary-trees/", gf:"https://www.geeksforgeeks.org/merge-two-binary-trees-node-wise/"},
+       {t:"Leaf-Similar Trees", d:"Check if leaf sequences match.", l:"E", lc:"https://leetcode.com/problems/leaf-similar-trees/", gf:"https://www.geeksforgeeks.org/check-if-leaf-traversal-of-two-binary-trees-is-same/"},
+       {t:"Sum Root to Leaf Numbers", d:"Sum of all root-leaf numbers.", l:"M", lc:"https://leetcode.com/problems/sum-root-to-leaf-numbers/", gf:"https://www.geeksforgeeks.org/sum-of-all-the-numbers-formed-from-root-to-leaf-paths/"},
+       {t:"Binary Tree Inorder Traversal", d:"Inorder traversal (iterative).", l:"E", lc:"https://leetcode.com/problems/binary-tree-inorder-traversal/", gf:"https://www.geeksforgeeks.org/inorder-tree-traversal-without-recursion/"},
+       {t:"Populating Next Right Pointers", d:"Connect level-order nodes.", l:"M", lc:"https://leetcode.com/problems/populating-next-right-pointers-in-each-node/", gf:"https://www.geeksforgeeks.org/connect-nodes-at-same-level/"},
+       {t:"Find Bottom Left Tree Value", d:"Find deepest leftmost value.", l:"M", lc:"https://leetcode.com/problems/find-bottom-left-tree-value/", gf:"https://www.geeksforgeeks.org/find-bottom-left-tree-value/"},
+       {t:"Delete Node in a BST", d:"Delete a node from BST.", l:"M", lc:"https://leetcode.com/problems/delete-node-in-a-bst/", gf:"https://www.geeksforgeeks.org/deletion-in-binary-search-tree/"},
+       {t:"Insert into BST", d:"Insert node into BST.", l:"M", lc:"https://leetcode.com/problems/insert-into-a-binary-search-tree/", gf:"https://www.geeksforgeeks.org/insert-a-node-in-bst/"},
+       {t:"Convert Sorted Array to BST", d:"Build balanced BST from sorted array.", l:"E", lc:"https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/", gf:"https://www.geeksforgeeks.org/sorted-array-to-balanced-bst/"},
+       {t:"All Nodes Distance K", d:"Nodes at distance K from target.", l:"M", lc:"https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/", gf:"https://www.geeksforgeeks.org/print-nodes-at-distance-k-from-a-given-node/"},
+       {t:"Binary Tree Cameras", d:"Min cameras to monitor tree.", l:"H", lc:"https://leetcode.com/problems/binary-tree-cameras/", gf:"https://www.geeksforgeeks.org/minimum-number-of-cameras-required-to-monitor-all-nodes-of-a-binary-tree/"}
+     ]},
+    {id:"dp", title:"Dynamic Programming", desc:"Knapsack, LCS, LIS, coin change, matrix DP.",
+      cheat:"<strong>What is it?</strong> DP solves problems by breaking them into overlapping subproblems and storing results to avoid recomputation (memoization or tabulation).<br><strong>Why it matters</strong> Converts exponential brute force to polynomial time; essential for optimization problems (min/max, count, boolean).<br><strong>Real-world uses</strong> Shortest path (Google Maps), bioinformatics (DNA sequence alignment), resource allocation, speech recognition, game AI.<br><strong>Key Patterns:</strong> 1D DP (fibonacci, climb stairs), 2D DP (grid paths, LCS), 0/1 knapsack, unbounded knapsack (coin change), LIS (binary search variant), state machine (stock buy/sell).<br><strong>Common Functions & Methods:</strong> <code>Array(n).fill(0)</code> for DP table, <code>Math.max()</code>/<code>Math.min()</code> for transitions, nested loops for iteration, recursion+memo for top-down.<br><strong>Code Templates:</strong> <pre>// 1D DP\nlet dp=[0,1];\nfor(let i=2;i<=n;i++)\n  dp[i]=dp[i-1]+dp[i-2];\nreturn dp[n];\n// 0/1 Knapsack\nfor(let i=1;i<=n;i++)\n  for(let w=W;w>=wt[i-1];w--)\n    dp[w]=Math.max(dp[w], dp[w-wt[i-1]]+val[i-1]);\n// LIS O(n^2)\nlet dp=new Array(n).fill(1);\nfor(let i=0;i<n;i++)\n  for(let j=0;j<i;j++)\n    if(arr[j]<arr[i]) dp[i]=Math.max(dp[i],dp[j]+1);</pre>",
+     problems:[
+       {t:"Climbing Stairs", d:"Count ways to climb n stairs.", l:"E", lc:"https://leetcode.com/problems/climbing-stairs/", gf:"https://www.geeksforgeeks.org/count-ways-reach-nth-stair/"},
+       {t:"House Robber", d:"Max sum without adjacent houses.", l:"M", lc:"https://leetcode.com/problems/house-robber/", gf:"https://www.geeksforgeeks.org/find-maximum-possible-stolen-value-houses/"},
+       {t:"House Robber II", d:"House Robber with circular houses.", l:"M", lc:"https://leetcode.com/problems/house-robber-ii/", gf:"https://www.geeksforgeeks.org/house-robber-ii-circular/"},
+       {t:"Coin Change", d:"Minimum coins to make amount.", l:"M", lc:"https://leetcode.com/problems/coin-change/", gf:"https://www.geeksforgeeks.org/coin-change-dp-7/"},
+       {t:"Coin Change II", d:"Number of combinations for amount.", l:"M", lc:"https://leetcode.com/problems/coin-change-ii/", gf:"https://www.geeksforgeeks.org/coin-change-dp-7/"},
+       {t:"Longest Increasing Subsequence", d:"Length of LIS.", l:"M", lc:"https://leetcode.com/problems/longest-increasing-subsequence/", gf:"https://www.geeksforgeeks.org/longest-increasing-subsequence-dp-3/"},
+       {t:"Longest Common Subsequence", d:"LCS of two strings.", l:"M", lc:"https://leetcode.com/problems/longest-common-subsequence/", gf:"https://www.geeksforgeeks.org/longest-common-subsequence-dp-4/"},
+       {t:"Word Break", d:"Can string be segmented?", l:"M", lc:"https://leetcode.com/problems/word-break/", gf:"https://www.geeksforgeeks.org/word-break-problem-dp-32/"},
+       {t:"Partition Equal Subset Sum", d:"Partition array into equal sum subsets.", l:"M", lc:"https://leetcode.com/problems/partition-equal-subset-sum/", gf:"https://www.geeksforgeeks.org/partition-problem-dp-18/"},
+       {t:"Unique Paths", d:"Count unique paths in grid.", l:"M", lc:"https://leetcode.com/problems/unique-paths/", gf:"https://www.geeksforgeeks.org/unique-paths-in-a-grid-with-obstacles/"},
+       {t:"Unique Paths II", d:"Unique paths with obstacles.", l:"M", lc:"https://leetcode.com/problems/unique-paths-ii/", gf:"https://www.geeksforgeeks.org/unique-paths-in-a-grid-with-obstacles/"},
+       {t:"Maximum Product Subarray", d:"Max product subarray.", l:"M", lc:"https://leetcode.com/problems/maximum-product-subarray/", gf:"https://www.geeksforgeeks.org/maximum-product-subarray/"},
+       {t:"Decode Ways", d:"Count ways to decode string.", l:"M", lc:"https://leetcode.com/problems/decode-ways/", gf:"https://www.geeksforgeeks.org/decode-ways/"},
+       {t:"Palindromic Substrings", d:"Count palindromic substrings.", l:"M", lc:"https://leetcode.com/problems/palindromic-substrings/", gf:"https://www.geeksforgeeks.org/count-palindrome-sub-strings-string/"},
+       {t:"Longest Palindromic Substring", d:"Longest palindrome substring.", l:"M", lc:"https://leetcode.com/problems/longest-palindromic-substring/", gf:"https://www.geeksforgeeks.org/longest-palindrome-substring-set-1/"},
+       {t:"Combination Sum IV", d:"Count combinations summing to target.", l:"M", lc:"https://leetcode.com/problems/combination-sum-iv/", gf:"https://www.geeksforgeeks.org/coin-change-dp-7/"},
+       {t:"0/1 Knapsack", d:"Max value within weight limit.", l:"M", lc:"https://leetcode.com/problems/ones-and-zeroes/", gf:"https://www.geeksforgeeks.org/0-1-knapsack-problem-dp-10/"},
+       {t:"Target Sum", d:"Assign +/- to reach target.", l:"M", lc:"https://leetcode.com/problems/target-sum/", gf:"https://www.geeksforgeeks.org/number-of-ways-to-reach-a-given-score/"},
+       {t:"Edit Distance", d:"Minimum edits to convert string.", l:"M", lc:"https://leetcode.com/problems/edit-distance/", gf:"https://www.geeksforgeeks.org/edit-distance-dp-5/"},
+       {t:"Best Time to Buy and Sell Stock III", d:"At most two transactions.", l:"H", lc:"https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/", gf:"https://www.geeksforgeeks.org/buy-sell-stock-atmost-twice/"},
+       {t:"Best Time to Buy and Sell Stock IV", d:"At most k transactions.", l:"H", lc:"https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/", gf:"https://www.geeksforgeeks.org/maximum-profit-by-buying-and-selling-a-share-at-most-k-times/"},
+       {t:"Burst Balloons", d:"Max coins from bursting balloons.", l:"H", lc:"https://leetcode.com/problems/burst-balloons/", gf:"https://www.geeksforgeeks.org/burst-balloons-to-maximize-coins/"},
+       {t:"Regular Expression Matching", d:"Implement regex with * and .", l:"H", lc:"https://leetcode.com/problems/regular-expression-matching/", gf:"https://www.geeksforgeeks.org/regular-expression-matching/"},
+       {t:"Wildcard Matching", d:"Wildcard pattern matching.", l:"H", lc:"https://leetcode.com/problems/wildcard-matching/", gf:"https://www.geeksforgeeks.org/wildcard-pattern-matching/"},
+       {t:"Maximal Rectangle", d:"Largest rectangle of 1s.", l:"H", lc:"https://leetcode.com/problems/maximal-rectangle/", gf:"https://www.geeksforgeeks.org/maximum-size-rectangle-binary-sub-matrix-1s/"},
+       {t:"Distinct Subsequences", d:"Count distinct subsequences of S matching T.", l:"H", lc:"https://leetcode.com/problems/distinct-subsequences/", gf:"https://www.geeksforgeeks.org/count-distinct-subsequences/"},
+       {t:"Min Cost Climbing Stairs", d:"Min cost to reach top floor.", l:"E", lc:"https://leetcode.com/problems/min-cost-climbing-stairs/", gf:"https://www.geeksforgeeks.org/minimum-cost-to-reach-the-top-of-the-floor-by-climbing-stairs/"},
+       {t:"N-th Tribonacci Number", d:"Tribonacci sequence.", l:"E", lc:"https://leetcode.com/problems/n-th-tribonacci-number/", gf:"https://www.geeksforgeeks.org/tribonacci-numbers/"},
+       {t:"Delete and Earn", d:"Max points deleting adjacent nums.", l:"M", lc:"https://leetcode.com/problems/delete-and-earn/", gf:"https://www.geeksforgeeks.org/delete-and-earn/"},
+       {t:"Minimum Path Sum", d:"Min sum path in grid.", l:"M", lc:"https://leetcode.com/problems/minimum-path-sum/", gf:"https://www.geeksforgeeks.org/minimum-path-sum-in-a-grid/"},
+       {t:"Triangle", d:"Min path sum in triangle.", l:"M", lc:"https://leetcode.com/problems/triangle/", gf:"https://www.geeksforgeeks.org/minimum-sum-path-triangle/"},
+       {t:"Unique Binary Search Trees", d:"Count unique BSTs from n nodes.", l:"M", lc:"https://leetcode.com/problems/unique-binary-search-trees/", gf:"https://www.geeksforgeeks.org/total-number-of-possible-binary-search-trees-with-n-keys/"},
+       {t:"Interleaving String", d:"Check if string is interleaving.", l:"M", lc:"https://leetcode.com/problems/interleaving-string/", gf:"https://www.geeksforgeeks.org/check-string-interleaving-two-given-strings/"},
+       {t:"Count Square Submatrices", d:"Count square submatrices of 1s.", l:"M", lc:"https://leetcode.com/problems/count-square-submatrices-with-all-ones/", gf:"https://www.geeksforgeeks.org/count-square-submatrices-with-all-1s/"},
+       {t:"Minimum Falling Path Sum", d:"Min falling path in matrix.", l:"M", lc:"https://leetcode.com/problems/minimum-falling-path-sum/", gf:"https://www.geeksforgeeks.org/minimum-falling-path-sum/"},
+       {t:"Longest Arithmetic Subsequence", d:"Longest arithmetic subsequence.", l:"M", lc:"https://leetcode.com/problems/longest-arithmetic-subsequence/", gf:"https://www.geeksforgeeks.org/longest-arithmetic-subsequence/"},
+       {t:"Longest String Chain", d:"Longest chain of word deletions.", l:"M", lc:"https://leetcode.com/problems/longest-string-chain/", gf:"https://www.geeksforgeeks.org/longest-string-chain/"},
+       {t:"Maximum Length of Repeated Subarray", d:"Longest common subarray.", l:"M", lc:"https://leetcode.com/problems/maximum-length-of-repeated-subarray/", gf:"https://www.geeksforgeeks.org/longest-common-subarray-in-two-given-arrays/"},
+       {t:"2 Keys Keyboard", d:"Min steps to get n A's on screen.", l:"M", lc:"https://leetcode.com/problems/2-keys-keyboard/", gf:"https://www.geeksforgeeks.org/2-keys-keyboard-problem/"},
+       {t:"Super Egg Drop", d:"Min moves with k eggs and n floors.", l:"H", lc:"https://leetcode.com/problems/super-egg-drop/", gf:"https://www.geeksforgeeks.org/egg-dropping-puzzle-dp-11/"},
+       {t:"Minimum Difficulty of Job Schedule", d:"Min difficulty scheduling jobs in d days.", l:"H", lc:"https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/", gf:"https://www.geeksforgeeks.org/minimum-difficulty-job-schedule/"},
+       {t:"Max Sum of Rectangle No Larger Than K", d:"Max sum rectangle <= k.", l:"H", lc:"https://leetcode.com/problems/max-sum-of-rectangle-no-larger-than-k/", gf:"https://www.geeksforgeeks.org/maximum-sum-rectangle-submatrix-sum-k/"},
+       {t:"Count Vowels Permutation", d:"Count vowel permutations by rules.", l:"H", lc:"https://leetcode.com/problems/count-vowels-permutation/", gf:"https://www.geeksforgeeks.org/count-strings-consisting-of-vowels-in-lexicographic-order/"},
+       {t:"Profitable Schemes", d:"Schemes with profit >= minProfit.", l:"H", lc:"https://leetcode.com/problems/profitable-schemes/", gf:"https://www.geeksforgeeks.org/0-1-knapsack-problem-dp-10/"},
+       {t:"Stone Game", d:"Alex wins stone game?", l:"M", lc:"https://leetcode.com/problems/stone-game/", gf:"https://www.geeksforgeeks.org/optimal-strategy-for-a-game-dp-31/"}
+     ]},
+    {id:"graphs", title:"Graphs", desc:"BFS/DFS, topological sort, Dijkstra, union-find.",
+      cheat:"<strong>What is it?</strong> Graph is nodes (vertices) connected by edges; can be directed/undirected, weighted/unweighted, cyclic/acyclic.<br><strong>Why it matters</strong> Graphs model complex relationships; traversal (DFS/BFS) and shortest path (Dijkstra/Bellman-Ford) are cornerstone interview topics.<br><strong>Real-world uses</strong> Social networks (friendships), GPS navigation (shortest path), web crawling, recommendation engines, network routing.<br><strong>Key Patterns:</strong> DFS/BFS for connectivity, adjacency list representation, topological sort (Kahn's algorithm), Dijkstra (shortest path), union-find (disjoint sets for cycle detection), bipartite check.<br><strong>Common Functions & Methods:</strong> <code>new Map()</code> for adjacency list, queue for BFS, stack/recursion for DFS, <code>new MinPriorityQueue()</code> for Dijkstra.<br><strong>Code Templates:</strong> <pre>// Adjacency list\nlet adj = new Map();\nfor(let [u,v] of edges){\n  if(!adj.has(u)) adj.set(u,[]);\n  adj.get(u).push(v);\n  if(!adj.has(v)) adj.set(v,[]);\n  adj.get(v).push(u);\n}\n// DFS\nfunction dfs(u, visited){\n  if(visited.has(u)) return;\n  visited.add(u);\n  for(let v of (adj.get(u)||[]))\n    dfs(v, visited);\n}</pre>",
+     problems:[
+       {t:"Number of Islands", d:"Count connected 1s in grid.", l:"M", lc:"https://leetcode.com/problems/number-of-islands/", gf:"https://www.geeksforgeeks.org/find-number-of-islands/"},
+       {t:"Flood Fill", d:"Fill connected region with color.", l:"E", lc:"https://leetcode.com/problems/flood-fill/", gf:"https://www.geeksforgeeks.org/flood-fill-algorithm/"},
+       {t:"Max Area of Island", d:"Largest island area.", l:"M", lc:"https://leetcode.com/problems/max-area-of-island/", gf:"https://www.geeksforgeeks.org/find-number-of-closed-islands/"},
+       {t:"Clone Graph", d:"Deep copy a graph.", l:"M", lc:"https://leetcode.com/problems/clone-graph/", gf:"https://www.geeksforgeeks.org/clone-an-undirected-graph/"},
+       {t:"Island Perimeter", d:"Perimeter of island in grid.", l:"E", lc:"https://leetcode.com/problems/island-perimeter/", gf:"https://www.geeksforgeeks.org/island-perimeter/"},
+       {t:"Pacific Atlantic Water Flow", d:"Cells that flow to both oceans.", l:"M", lc:"https://leetcode.com/problems/pacific-atlantic-water-flow/", gf:"https://www.geeksforgeeks.org/pacific-atlantic-water-flow/"},
+       {t:"Surrounded Regions", d:"Capture regions surrounded by X.", l:"M", lc:"https://leetcode.com/problems/surrounded-regions/", gf:"https://www.geeksforgeeks.org/given-matrix-o-x-replace-o-x-surrounded-x/"},
+       {t:"Rotting Oranges", d:"Time for all oranges to rot.", l:"M", lc:"https://leetcode.com/problems/rotting-oranges/", gf:"https://www.geeksforgeeks.org/minimum-time-required-so-that-all-oranges-become-rotten/"},
+       {t:"Word Search", d:"Search word in 2D grid.", l:"M", lc:"https://leetcode.com/problems/word-search/", gf:"https://www.geeksforgeeks.org/word-search/"},
+       {t:"Course Schedule", d:"Can all courses be finished?", l:"M", lc:"https://leetcode.com/problems/course-schedule/", gf:"https://www.geeksforgeeks.org/find-if-it-is-possible-to-finish-all-tasks-given-from-the-dependencies/"},
+       {t:"Course Schedule II", d:"Return ordering of courses.", l:"M", lc:"https://leetcode.com/problems/course-schedule-ii/", gf:"https://www.geeksforgeeks.org/find-if-it-is-possible-to-finish-all-tasks-given-from-the-dependencies/"},
+       {t:"Graph Valid Tree", d:"Check if graph is a valid tree.", l:"M", lc:"https://leetcode.com/problems/graph-valid-tree/", gf:"https://www.geeksforgeeks.org/check-given-graph-tree/"},
+       {t:"Number of Connected Components", d:"Count connected components.", l:"M", lc:"https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/", gf:"https://www.geeksforgeeks.org/connected-components-in-an-undirected-graph/"},
+       {t:"Redundant Connection", d:"Find edge that creates cycle.", l:"M", lc:"https://leetcode.com/problems/redundant-connection/", gf:"https://www.geeksforgeeks.org/disjoint-set-data-structures/"},
+       {t:"Network Delay Time", d:"Dijkstra â€” time for all nodes to receive signal.", l:"M", lc:"https://leetcode.com/problems/network-delay-time/", gf:"https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/"},
+       {t:"Cheapest Flights Within K Stops", d:"Cheapest flight with at most K stops.", l:"M", lc:"https://leetcode.com/problems/cheapest-flights-within-k-stops/", gf:"https://www.geeksforgeeks.org/cheapest-flights-within-k-stops/"},
+       {t:"Alien Dictionary", d:"Order letters from alien language.", l:"H", lc:"https://leetcode.com/problems/alien-dictionary/", gf:"https://www.geeksforgeeks.org/given-sorted-dictionary-find-precedence-characters/"},
+       {t:"Longest Increasing Path in Matrix", d:"Longest increasing path in matrix.", l:"H", lc:"https://leetcode.com/problems/longest-increasing-path-in-a-matrix/", gf:"https://www.geeksforgeeks.org/longest-increasing-path-in-matrix/"},
+       {t:"Minimum Height Trees", d:"Roots giving minimum height trees.", l:"M", lc:"https://leetcode.com/problems/minimum-height-trees/", gf:"https://www.geeksforgeeks.org/minimum-height-trees/"},
+       {t:"Find Center of Star Graph", d:"Find center of star graph.", l:"E", lc:"https://leetcode.com/problems/find-center-of-star-graph/", gf:"https://www.geeksforgeeks.org/find-central-element-in-star-graph/"},
+       {t:"Evaluate Division", d:"Evaluate division equations.", l:"M", lc:"https://leetcode.com/problems/evaluate-division/", gf:"https://www.geeksforgeeks.org/evaluate-division/"},
+       {t:"Number of Provinces", d:"Count friend circles.", l:"M", lc:"https://leetcode.com/problems/number-of-provinces/", gf:"https://www.geeksforgeeks.org/disjoint-set-data-structures/"},
+       {t:"Possible Bipartition", d:"Can graph be bipartite?", l:"M", lc:"https://leetcode.com/problems/possible-bipartition/", gf:"https://www.geeksforgeeks.org/bipartite-graph/"},
+       {t:"Reconstruct Itinerary", d:"Reconstruct flight path.", l:"H", lc:"https://leetcode.com/problems/reconstruct-itinerary/", gf:"https://www.geeksforgeeks.org/find-itinerary-from-a-given-list-of-tickets/"},
+       {t:"Path With Minimum Effort", d:"Min max-height-difference path.", l:"M", lc:"https://leetcode.com/problems/path-with-minimum-effort/", gf:"https://www.geeksforgeeks.org/path-with-minimum-effort/"},
+       {t:"Regions Cut by Slashes", d:"Count regions in grid.", l:"M", lc:"https://leetcode.com/problems/regions-cut-by-slashes/", gf:"https://www.geeksforgeeks.org/count-number-of-regions-in-a-grid/"},
+       {t:"As Far from Land as Possible", d:"Max distance from land cell.", l:"M", lc:"https://leetcode.com/problems/as-far-from-land-as-possible/", gf:"https://www.geeksforgeeks.org/distance-of-nearest-cell-having-1-in-a-binary-matrix/"},
+       {t:"All Paths from Source to Target", d:"All paths in DAG from 0 to n-1.", l:"M", lc:"https://leetcode.com/problems/all-paths-from-source-to-target/", gf:"https://www.geeksforgeeks.org/find-all-paths-from-source-to-destination-in-a-directed-acyclic-graph/"},
+       {t:"Find Eventual Safe States", d:"Nodes that lead to terminal.", l:"M", lc:"https://leetcode.com/problems/find-eventual-safe-states/", gf:"https://www.geeksforgeeks.org/find-eventual-safe-states/"},
+       {t:"Shortest Bridge", d:"Shortest bridge between islands.", l:"M", lc:"https://leetcode.com/problems/shortest-bridge/", gf:"https://www.geeksforgeeks.org/shortest-bridge-in-a-binary-matrix/"}
+     ]},
+    {id:"heap", title:"Heap / Priority Queue", desc:"Top K, median, merge K sorted, task scheduler.",
+      cheat:"<strong>What is it?</strong> Heap is a complete binary tree where parent is smaller (min-heap) or larger (max-heap) than children; priority queue is an abstract type backed by heap.<br><strong>Why it matters</strong> O(log n) insert/delete with O(1) min/max; essential for Top K, median tracking, scheduling, and K-way merge problems.<br><strong>Real-world uses</strong> Task scheduling (OS), Dijkstra's algorithm, Huffman coding, emergency room triage, stock market order matching.<br><strong>Key Patterns:</strong> Min-heap for smallest elements, max-heap for largest, Top K pattern (heap of size k), median from data stream (two heaps), K-way merge.<br><strong>Common Functions & Methods:</strong> <code>new MinPriorityQueue()</code>/<code>new MaxPriorityQueue()</code> (LeetCode), custom heap via array with <code>push()</code>/<code>pop()</code> and sift operations.<br><strong>Code Templates:</strong> <pre>// Top K frequent (bucket sort alternative)\nlet heap = [];\nfor(let [num,freq] of map){\n  heap.push([freq,num]);\n  heap.sort((a,b)=>a[0]-b[0]);\n  if(heap.length>k) heap.shift();\n}\nreturn heap.map(x=>x[1]);\n// Median from stream\nlet lo=[], hi=[];\n// lo=maxHeap (negate), hi=minHeap\n</pre>",
+     problems:[
+       {t:"Kth Largest in Array", d:"Find kth largest element.", l:"M", lc:"https://leetcode.com/problems/kth-largest-element-in-an-array/", gf:"https://www.geeksforgeeks.org/kth-largest-element-in-an-array/"},
+       {t:"Kth Smallest in Sorted Matrix", d:"Kth smallest in row-col sorted matrix.", l:"M", lc:"https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/", gf:"https://www.geeksforgeeks.org/kth-smallest-element-in-a-row-wise-and-column-wise-sorted-2d-array/"},
+       {t:"Top K Frequent Elements", d:"Return k most frequent elements.", l:"M", lc:"https://leetcode.com/problems/top-k-frequent-elements/", gf:"https://www.geeksforgeeks.org/find-k-numbers-occurrences-given-array/"},
+       {t:"Task Scheduler", d:"Minimum time to schedule tasks with cooldown.", l:"M", lc:"https://leetcode.com/problems/task-scheduler/", gf:"https://www.geeksforgeeks.org/task-scheduler/"},
+       {t:"Merge k Sorted Lists", d:"Merge K sorted linked lists.", l:"H", lc:"https://leetcode.com/problems/merge-k-sorted-lists/", gf:"https://www.geeksforgeeks.org/merge-k-sorted-linked-lists/"},
+       {t:"Find Median from Data Stream", d:"Median of streaming numbers.", l:"H", lc:"https://leetcode.com/problems/find-median-from-data-stream/", gf:"https://www.geeksforgeeks.org/median-of-stream-of-integers-running-integers/"},
+       {t:"Reorganize String", d:"Rearrange so no adjacent same char.", l:"M", lc:"https://leetcode.com/problems/reorganize-string/", gf:"https://www.geeksforgeeks.org/rearrange-a-string-so-that-all-same-characters-become-at-least-d-distance-away/"},
+       {t:"Minimum Cost to Connect Sticks", d:"Min cost to connect sticks.", l:"M", lc:"https://leetcode.com/problems/minimum-cost-to-connect-sticks/", gf:"https://www.geeksforgeeks.org/optimal-file-merge-patterns/"},
+       {t:"Top K Frequent Words", d:"Return k most frequent words.", l:"M", lc:"https://leetcode.com/problems/top-k-frequent-words/", gf:"https://www.geeksforgeeks.org/find-k-frequent-words-from-a-file/"},
+       {t:"K Closest Points to Origin", d:"K closest points to origin.", l:"M", lc:"https://leetcode.com/problems/k-closest-points-to-origin/", gf:"https://www.geeksforgeeks.org/k-closest-points-to-origin/"},
+       {t:"Last Stone Weight", d:"Smash stones and return final weight.", l:"E", lc:"https://leetcode.com/problems/last-stone-weight/", gf:"https://www.geeksforgeeks.org/last-stone-weight/"},
+       {t:"Sliding Window Median", d:"Median of each sliding window.", l:"H", lc:"https://leetcode.com/problems/sliding-window-median/", gf:"https://www.geeksforgeeks.org/median-of-sliding-window-in-an-array/"},
+       {t:"Sort Characters by Frequency", d:"Sort string by char frequency.", l:"M", lc:"https://leetcode.com/problems/sort-characters-by-frequency/", gf:"https://www.geeksforgeeks.org/sort-string-characters-frequency/"},
+       {t:"Remove Stones to Minimize Total", d:"Halve stones to minimize total.", l:"M", lc:"https://leetcode.com/problems/remove-stones-to-minimize-total/", gf:"https://www.geeksforgeeks.org/minimize-total-sum-by-removing-stones/"},
+       {t:"Maximum Performance of a Team", d:"Max performance of k workers.", l:"H", lc:"https://leetcode.com/problems/maximum-performance-of-a-team/", gf:"https://www.geeksforgeeks.org/maximum-performance-of-a-team/"},
+       {t:"Ugly Number II", d:"Nth ugly number (only 2,3,5).", l:"M", lc:"https://leetcode.com/problems/ugly-number-ii/", gf:"https://www.geeksforgeeks.org/ugly-numbers/"},
+       {t:"Seat Reservation Manager", d:"Reserve seats in a theatre.", l:"M", lc:"https://leetcode.com/problems/seat-reservation-manager/", gf:"https://www.geeksforgeeks.org/seat-reservation-manager/"},
+       {t:"Swim in Rising Water", d:"Min time to reach bottom-right.", l:"H", lc:"https://leetcode.com/problems/swim-in-rising-water/", gf:"https://www.geeksforgeeks.org/swim-in-rising-water/"},
+       {t:"Kth Largest Element in a Stream", d:"Kth largest in stream.", l:"E", lc:"https://leetcode.com/problems/kth-largest-element-in-a-stream/", gf:"https://www.geeksforgeeks.org/kth-largest-element-in-a-stream/"},
+       {t:"Single-Threaded CPU", d:"CPU scheduling with heap.", l:"M", lc:"https://leetcode.com/problems/single-threaded-cpu/", gf:"https://www.geeksforgeeks.org/single-threaded-cpu/"},
+       {t:"Minimum Interval Queries", d:"Min interval for each query.", l:"H", lc:"https://leetcode.com/problems/minimum-interval-to-include-each-query/", gf:"https://www.geeksforgeeks.org/find-smallest-interval-for-each-query/"}
+     ]},
+    {id:"greedy", title:"Greedy & Intervals", desc:"Meeting rooms, merge intervals, jump game, scheduling.",
+      cheat:"<strong>What is it?</strong> Greedy makes locally optimal choice at each step hoping it leads to global optimum. Intervals deal with ranges and overlaps.<br><strong>Why it matters</strong> Greedy gives optimal solution for problems with optimal substructure and greedy choice property; interval problems are very common in scheduling.<br><strong>Real-world uses</strong> Meeting room scheduling, CPU job scheduling, Huffman encoding, minimum spanning tree (Prim's/Kruskal's), coin change (canonical currencies).<br><strong>Key Patterns:</strong> Sort by start/end time, merge overlapping intervals, sweep line for meeting rooms, greedy choice for local optimum (jump game, gas station), sort by end for non-overlapping count.<br><strong>Common Functions & Methods:</strong> <code>sort((a,b)=>a[0]-b[0])</code> for start sorting, <code>sort((a,b)=>a[1]-b[1])</code> for end sorting.<br><strong>Code Templates:</strong> <pre>// Merge intervals\nintervals.sort((a,b)=>a[0]-b[0]);\nlet res = [intervals[0]];\nfor(let i=1;i<intervals.length;i++){\n  let last=res[res.length-1];\n  if(intervals[i][0]<=last[1])\n    last[1]=Math.max(last[1], intervals[i][1]);\n  else res.push(intervals[i]);\n}\nreturn res;\n// Non-overlapping count (sort by end)\nintervals.sort((a,b)=>a[1]-b[1]);</pre>",
+     problems:[
+       {t:"Jump Game", d:"Can you reach last index?", l:"M", lc:"https://leetcode.com/problems/jump-game/", gf:"https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/"},
+       {t:"Jump Game II", d:"Minimum jumps to reach end.", l:"H", lc:"https://leetcode.com/problems/jump-game-ii/", gf:"https://www.geeksforgeeks.org/minimum-number-of-jumps-to-reach-end-of-a-given-array/"},
+       {t:"Gas Station", d:"Start from which station?", l:"M", lc:"https://leetcode.com/problems/gas-station/", gf:"https://www.geeksforgeeks.org/find-a-tour-that-visits-all-stations/"},
+       {t:"Hand of Straights", d:"Group cards into straight groups.", l:"M", lc:"https://leetcode.com/problems/hand-of-straights/", gf:"https://www.geeksforgeeks.org/check-if-an-array-can-be-arranged-into-consecutive-subsequences/"},
+       {t:"Merge Intervals", d:"Merge overlapping intervals.", l:"M", lc:"https://leetcode.com/problems/merge-intervals/", gf:"https://www.geeksforgeeks.org/merging-intervals/"},
+       {t:"Insert Interval", d:"Insert interval into sorted intervals.", l:"M", lc:"https://leetcode.com/problems/insert-interval/", gf:"https://www.geeksforgeeks.org/insert-in-sorted-and-non-overlapping-interval-array/"},
+       {t:"Non-overlapping Intervals", d:"Remove min intervals to make non-overlapping.", l:"M", lc:"https://leetcode.com/problems/non-overlapping-intervals/", gf:"https://www.geeksforgeeks.org/find-non-overlapping-intervals-among-a-given-set-of-intervals/"},
+       {t:"Meeting Rooms II", d:"Min meeting rooms required.", l:"M", lc:"https://leetcode.com/problems/meeting-rooms-ii/", gf:"https://www.geeksforgeeks.org/minimum-number-of-platforms-required-for-a-railway-station/"},
+        {t:"Candy", d:"Minimum candies to distribute.", l:"H", lc:"https://leetcode.com/problems/candy/", gf:"https://www.geeksforgeeks.org/minimum-candies-distribute-problem/"},
+        {t:"Maximum Units on a Truck", d:"Max units fit on truck.", l:"E", lc:"https://leetcode.com/problems/maximum-units-on-a-truck/", gf:"https://www.geeksforgeeks.org/maximize-number-of-items-that-can-be-put-in-truck/"},
+       {t:"Minimum Number of Arrows to Burst Balloons", d:"Min arrows to burst all balloons.", l:"M", lc:"https://leetcode.com/problems/minimum-number-of-arrows-to-burst-balloons/", gf:"https://www.geeksforgeeks.org/minimum-number-of-arrows-to-burst-balloons/"},
+       {t:"Remove Covered Intervals", d:"Remove intervals covered by another.", l:"M", lc:"https://leetcode.com/problems/remove-covered-intervals/", gf:"https://www.geeksforgeeks.org/remove-covered-intervals/"},
+       {t:"Partition Labels", d:"Partition string so each char in one part.", l:"M", lc:"https://leetcode.com/problems/partition-labels/", gf:"https://www.geeksforgeeks.org/partition-string-into-substrings-with-common-characters/"},
+       {t:"Maximum Length of Pair Chain", d:"Longest chain of pairs.", l:"M", lc:"https://leetcode.com/problems/maximum-length-of-pair-chain/", gf:"https://www.geeksforgeeks.org/maximum-chain-length-pairs/"},
+       {t:"Car Pooling", d:"Can car pick up and drop off all?", l:"M", lc:"https://leetcode.com/problems/car-pooling/", gf:"https://www.geeksforgeeks.org/car-pooling/"},
+       {t:"Assign Cookies", d:"Max content children.", l:"E", lc:"https://leetcode.com/problems/assign-cookies/", gf:"https://www.geeksforgeeks.org/assign-cookies-problem/"},
+       {t:"Lemonade Change", d:"Can give change at stall?", l:"E", lc:"https://leetcode.com/problems/lemonade-change/", gf:"https://www.geeksforgeeks.org/lemonade-change/"},
+       {t:"Can Place Flowers", d:"Can plant n flowers?", l:"E", lc:"https://leetcode.com/problems/can-place-flowers/", gf:"https://www.geeksforgeeks.org/can-place-flowers/"},
+       {t:"Queue Reconstruction by Height", d:"Reconstruct queue from height data.", l:"M", lc:"https://leetcode.com/problems/queue-reconstruction-by-height/", gf:"https://www.geeksforgeeks.org/queue-reconstruction-by-height/"},
+       {t:"Reduce Array Size to Half", d:"Min set size to halve array.", l:"M", lc:"https://leetcode.com/problems/reduce-array-size-to-the-half/", gf:"https://www.geeksforgeeks.org/reduce-array-size-to-half/"},
+       {t:"Minimum Increment to Make Array Unique", d:"Min increments for unique array.", l:"M", lc:"https://leetcode.com/problems/minimum-increment-to-make-array-unique/", gf:"https://www.geeksforgeeks.org/minimum-increment-operations-to-make-array-unique/"},
+       {t:"Broken Calculator", d:"Min operations to reach target.", l:"M", lc:"https://leetcode.com/problems/broken-calculator/", gf:"https://www.geeksforgeeks.org/broken-calculator/"},
+       {t:"Minimum Number of Refueling Stops", d:"Min refueling stops to destination.", l:"H", lc:"https://leetcode.com/problems/minimum-number-of-refueling-stops/", gf:"https://www.geeksforgeeks.org/minimum-number-of-refueling-stops/"},
+       {t:"IPO", d:"Max capital from k projects.", l:"H", lc:"https://leetcode.com/problems/ipo/", gf:"https://www.geeksforgeeks.org/ipo-problem/"},
+       {t:"Earliest Possible Day of Full Bloom", d:"Earliest day all flowers bloom.", l:"H", lc:"https://leetcode.com/problems/earliest-possible-day-of-full-bloom/", gf:"https://www.geeksforgeeks.org/earliest-possible-day-of-full-bloom/"}
+     ]},
+    {id:"backtracking", title:"Backtracking", desc:"Permutations, subsets, N-queens, combination sum.",
+      cheat:"<strong>What is it?</strong> Backtracking explores all candidates via DFS, abandoning (pruning) paths that cannot lead to a valid solution.<br><strong>Why it matters</strong> Only general technique for constraint satisfaction problems (N-Queens, Sudoku); teaches exhaustive search with pruning for efficiency.<br><strong>Real-world uses</strong> Crossword puzzle solvers, constraint satisfaction in AI, pathfinding in games, scheduling with constraints, regex matching.<br><strong>Key Patterns:</strong> Subsets (choose/not-choose), permutations (swap/backtrack), combination sum (target with candidates), pruning invalid paths early, N-Queens row-by-row placement.<br><strong>Common Functions & Methods:</strong> Recursive backtracking with <code>for</code> loop for choices, <code>push()</code> + recurse + <code>pop()</code> pattern, <code>used</code> array for permutations.<br><strong>Code Templates:</strong> <pre>// Subsets\nfunction bT(start, path){\n  res.push([...path]);\n  for(let i=start;i<nums.length;i++){\n    path.push(nums[i]);\n    bT(i+1,path);\n    path.pop();\n  }\n}\nbT(0,[]);\nreturn res;\n// Permutations\nfunction bT(path){\n  if(path.length===nums.length) res.push([...path]);\n  for(let n of nums){\n    if(used.has(n)) continue;\n    used.add(n); path.push(n);\n    bT(path);\n    path.pop(); used.delete(n);\n  }\n}</pre>",
+     problems:[
+       {t:"Subsets", d:"Return all subsets.", l:"M", lc:"https://leetcode.com/problems/subsets/", gf:"https://www.geeksforgeeks.org/find-all-distinct-subsets-of-a-given-set/"},
+       {t:"Subsets II", d:"Subsets with duplicates.", l:"M", lc:"https://leetcode.com/problems/subsets-ii/", gf:"https://www.geeksforgeeks.org/find-distinct-subsets-given-set/"},
+       {t:"Permutations", d:"Return all permutations.", l:"M", lc:"https://leetcode.com/problems/permutations/", gf:"https://www.geeksforgeeks.org/write-a-c-program-to-print-all-permutations-of-a-given-string/"},
+       {t:"Permutations II", d:"Permutations with duplicates.", l:"M", lc:"https://leetcode.com/problems/permutations-ii/", gf:"https://www.geeksforgeeks.org/print-all-permutations-of-a-string-with-duplicates-allowed/"},
+       {t:"Combination Sum", d:"Combinations that sum to target.", l:"M", lc:"https://leetcode.com/problems/combination-sum/", gf:"https://www.geeksforgeeks.org/combinational-sum/"},
+       {t:"Combination Sum II", d:"Combinations sum to target, no reuse.", l:"M", lc:"https://leetcode.com/problems/combination-sum-ii/", gf:"https://www.geeksforgeeks.org/combinational-sum/"},
+       {t:"Combination Sum III", d:"Find k combos that sum to n.", l:"M", lc:"https://leetcode.com/problems/combination-sum-iii/", gf:"https://www.geeksforgeeks.org/combinational-sum/"},
+       {t:"Letter Combinations of a Phone Number", d:"All letter combos from digits.", l:"M", lc:"https://leetcode.com/problems/letter-combinations-of-a-phone-number/", gf:"https://www.geeksforgeeks.org/find-possible-words-phone-digits/"},
+       {t:"Generate Parentheses", d:"Generate all valid parentheses combos.", l:"M", lc:"https://leetcode.com/problems/generate-parentheses/", gf:"https://www.geeksforgeeks.org/generate-all-possible-parentheses/"},
+       {t:"N-Queens", d:"Place N queens safely.", l:"H", lc:"https://leetcode.com/problems/n-queens/", gf:"https://www.geeksforgeeks.org/n-queen-problem-backtracking-3/"},
+       {t:"Sudoku Solver", d:"Solve 9x9 sudoku.", l:"H", lc:"https://leetcode.com/problems/sudoku-solver/", gf:"https://www.geeksforgeeks.org/sudoku-backtracking-7/"},
+       {t:"Palindrome Partitioning", d:"Partition string into palindromes.", l:"M", lc:"https://leetcode.com/problems/palindrome-partitioning/", gf:"https://www.geeksforgeeks.org/given-a-string-print-all-possible-palindromic-partition/"},
+       {t:"Word Search", d:"Search word in 2D board.", l:"M", lc:"https://leetcode.com/problems/word-search/", gf:"https://www.geeksforgeeks.org/word-search/"},
+       {t:"Restore IP Addresses", d:"Restore valid IP addresses.", l:"M", lc:"https://leetcode.com/problems/restore-ip-addresses/", gf:"https://www.geeksforgeeks.org/program-to-validate-an-ip-address/"},
+       {t:"Matchsticks to Square", d:"Form square from matchsticks.", l:"M", lc:"https://leetcode.com/problems/matchsticks-to-square/", gf:"https://www.geeksforgeeks.org/matchsticks-to-square/"},
+       {t:"Letter Case Permutation", d:"Toggle case permutations.", l:"M", lc:"https://leetcode.com/problems/letter-case-permutation/", gf:"https://www.geeksforgeeks.org/letter-case-permutation/"},
+       {t:"Combinations", d:"All k-length combinations 1..n.", l:"M", lc:"https://leetcode.com/problems/combinations/", gf:"https://www.geeksforgeeks.org/print-all-combinations-of-given-length/"},
+       {t:"Factor Combinations", d:"All factor combinations of n.", l:"M", lc:"https://leetcode.com/problems/factor-combinations/", gf:"https://www.geeksforgeeks.org/factor-combinations/"},
+       {t:"Beautiful Arrangement", d:"Count beautiful arrangements.", l:"M", lc:"https://leetcode.com/problems/beautiful-arrangement/", gf:"https://www.geeksforgeeks.org/beautiful-arrangement/"},
+       {t:"Split Array into Fibonacci", d:"Split string into Fibonacci seq.", l:"M", lc:"https://leetcode.com/problems/split-array-into-fibonacci-sequence/", gf:"https://www.geeksforgeeks.org/split-array-into-fibonacci-sequence/"},
+       {t:"Word Search II", d:"Find all words in board.", l:"H", lc:"https://leetcode.com/problems/word-search-ii/", gf:"https://www.geeksforgeeks.org/word-search-ii/"},
+       {t:"Remove Invalid Parentheses", d:"Remove min parens for valid string.", l:"H", lc:"https://leetcode.com/problems/remove-invalid-parentheses/", gf:"https://www.geeksforgeeks.org/remove-invalid-parentheses/"},
+       {t:"Robot Room Cleaner", d:"Clean robot in unknown room.", l:"H", lc:"https://leetcode.com/problems/robot-room-cleaner/", gf:"https://www.geeksforgeeks.org/robot-room-cleaner/"},
+       {t:"Verbal Arithmetic Puzzle", d:"Solve cryptarithmetic puzzle.", l:"H", lc:"https://leetcode.com/problems/verbal-arithmetic-puzzle/", gf:"https://www.geeksforgeeks.org/verbal-arithmetic-puzzle/"},
+       {t:"Stickers to Spell Word", d:"Min stickers to spell target.", l:"H", lc:"https://leetcode.com/problems/stickers-to-spell-word/", gf:"https://www.geeksforgeeks.org/stickers-to-spell-word/"}
+     ]},
+      {id:"strings", title:"Strings", desc:"Pattern matching, string manipulation, encoding.",
+        cheat:"<strong>What is it?</strong> Strings are sequences of characters; often treated as character arrays with specific manipulation methods.<br><strong>Why it matters</strong> String problems test pattern matching, sliding window, DP (LCS, edit distance), and character frequency techniques. Very common in interviews.<br><strong>Real-world uses</strong> Search engines (pattern matching), spell checkers, DNA sequence analysis, text editors, encryption, data serialization.<br><strong>Key Patterns:</strong> String building (join/split), character frequency counting (array of 26), sliding window on strings, palindrome checks (two pointers), substring search (KMP/Rabin-Karp).<br><strong>Common Functions & Methods:</strong> <code>split('')</code>/<code>join('')</code>, <code>charCodeAt()</code>, <code>substring()</code>/<code>slice()</code>, <code>indexOf()</code>, <code>includes()</code>, <code>startsWith()</code>/<code>endsWith()</code>, <code>trim()</code>/<code>replace()</code>.<br><strong>Code Templates:</strong> <pre>// Char frequency (lowercase)\nlet freq = new Array(26).fill(0);\nfor(let c of s)\n  freq[c.charCodeAt(0)-97]++;\n// Palindrome check\nlet l=0, r=s.length-1;\nwhile(l<r){\n  if(s[l]!==s[r]) return false;\n  l++; r--;\n}\nreturn true;\n// Sliding window substring\nlet map=new Map(), l=0;\nfor(let r=0;r<s.length;r++){\n  map.set(s[r],(map.get(s[r])||0)+1);\n  while(map.get(s[r])>1){\n    map.set(s[l],map.get(s[l])-1);\n    if(map.get(s[l])===0) map.delete(s[l]);\n    l++;\n  }\n  max=Math.max(max,r-l+1);\n}</pre>",
+      problems:[
+        {t:"Longest Common Prefix", d:"Find longest common prefix.", l:"E", lc:"https://leetcode.com/problems/longest-common-prefix/", gf:"https://www.geeksforgeeks.org/longest-common-prefix-using-sorting/"},
+        {t:"First Unique Character", d:"Find first non-repeating char.", l:"E", lc:"https://leetcode.com/problems/first-unique-character-in-a-string/", gf:"https://www.geeksforgeeks.org/first-non-repeating-character-using-one-traversal-of-string/"},
+        {t:"Ransom Note", d:"Can ransom note be formed?", l:"E", lc:"https://leetcode.com/problems/ransom-note/", gf:"https://www.geeksforgeeks.org/ransom-note/"},
+        {t:"Isomorphic Strings", d:"Check if strings are isomorphic.", l:"E", lc:"https://leetcode.com/problems/isomorphic-strings/", gf:"https://www.geeksforgeeks.org/check-if-two-given-strings-are-isomorphic-to-each-other/"},
+        {t:"Word Pattern", d:"String follows pattern?", l:"E", lc:"https://leetcode.com/problems/word-pattern/", gf:"https://www.geeksforgeeks.org/word-pattern/"},
+        {t:"Find the Difference", d:"Find char added in string t.", l:"E", lc:"https://leetcode.com/problems/find-the-difference/", gf:"https://www.geeksforgeeks.org/find-the-difference-between-two-strings/"},
+        {t:"Roman to Integer", d:"Convert Roman numeral to int.", l:"E", lc:"https://leetcode.com/problems/roman-to-integer/", gf:"https://www.geeksforgeeks.org/roman-number-to-integer/"},
+        {t:"Integer to Roman", d:"Convert int to Roman numeral.", l:"M", lc:"https://leetcode.com/problems/integer-to-roman/", gf:"https://www.geeksforgeeks.org/converting-roman-numerals-decimal-lying-1-3999/"},
+        {t:"String to Integer (atoi)", d:"Implement string to int conversion.", l:"M", lc:"https://leetcode.com/problems/string-to-integer-atoi/", gf:"https://www.geeksforgeeks.org/string-to-integer-atoi/"},
+        {t:"Count and Say", d:"Count-and-say sequence.", l:"M", lc:"https://leetcode.com/problems/count-and-say/", gf:"https://www.geeksforgeeks.org/look-and-say-sequence/"},
+        {t:"Zigzag Conversion", d:"Zigzag string conversion.", l:"M", lc:"https://leetcode.com/problems/zigzag-conversion/", gf:"https://www.geeksforgeeks.org/zigzag-conversion/"},
+        {t:"Compare Version Numbers", d:"Compare two version strings.", l:"M", lc:"https://leetcode.com/problems/compare-version-numbers/", gf:"https://www.geeksforgeeks.org/compare-two-version-numbers/"},
+        {t:"Multiply Strings", d:"Multiply two string numbers.", l:"M", lc:"https://leetcode.com/problems/multiply-strings/", gf:"https://www.geeksforgeeks.org/multiply-two-large-numbers-represented-as-strings/"},
+        {t:"Repeated DNA Sequences", d:"Find repeated 10-char sequences.", l:"M", lc:"https://leetcode.com/problems/repeated-dna-sequences/", gf:"https://www.geeksforgeeks.org/find-repeated-dna-sequences/"},
+        {t:"Text Justification", d:"Justify words to lines.", l:"H", lc:"https://leetcode.com/problems/text-justification/", gf:"https://www.geeksforgeeks.org/text-justification/"}
+      ]},
+      {id:"bit-manipulation", title:"Bit Manipulation", desc:"XOR tricks, bit counting, power of two.",
+        cheat:"<strong>What is it?</strong> Bit manipulation operates directly on binary representations of integers using bitwise operators (AND, OR, XOR, NOT, shifts).<br><strong>Why it matters</strong> Extremely fast (single CPU instruction); solves problems that seem complex with arithmetic (find unique, power of two, subset enumeration) in O(1)/O(n).<br><strong>Real-world uses</strong> Cryptography, graphics (color channels), network addressing (subnet masks), compression, flags/permissions systems, checksums (CRC).<br><strong>Key Patterns:</strong> XOR for finding unique element (<code>a^a=0</code>), bit masking (<code>1<<k</code>), counting set bits (Brian Kernighan's), power of two (<code>n&(n-1)</code>), subset enumeration via bitmasks.<br><strong>Common Functions & Methods:</strong> <code>&</code> (AND), <code>|</code> (OR), <code>^</code> (XOR), <code>~</code> (NOT), <code><<</code> / <code>>></code> (left/right shift), <code>>>></code> (unsigned shift).<br><strong>Code Templates:</strong> <pre>// Check/set/clear kth bit\n(n>>k)&1    // get\nn |= (1<<k)  // set\nn &= ~(1<<k) // clear\n// Count set bits (Brian Kernighan)\nlet c=0;\nwhile(n){ n &= n-1; c++; }\n// Power of two\n(n & n-1) === 0\n// XOR for single number\nlet res=0;\nfor(let n of arr) res ^= n;\nreturn res;</pre>",
+      problems:[
+        {t:"Number of 1 Bits", d:"Count set bits in a number.", l:"E", lc:"https://leetcode.com/problems/number-of-1-bits/", gf:"https://www.geeksforgeeks.org/count-set-bits-in-an-integer/"},
+        {t:"Power of Two", d:"Check if number is power of two.", l:"E", lc:"https://leetcode.com/problems/power-of-two/", gf:"https://www.geeksforgeeks.org/program-to-find-whether-a-no-is-power-of-two/"},
+        {t:"Reverse Bits", d:"Reverse bits of a 32-bit integer.", l:"E", lc:"https://leetcode.com/problems/reverse-bits/", gf:"https://www.geeksforgeeks.org/reverse-bits-of-an-integer/"},
+        {t:"Counting Bits", d:"Count bits for all numbers 0..n.", l:"E", lc:"https://leetcode.com/problems/counting-bits/", gf:"https://www.geeksforgeeks.org/count-total-set-bits-in-all-numbers-from-1-to-n/"},
+        {t:"Sum of Two Integers", d:"Add without + or -.", l:"M", lc:"https://leetcode.com/problems/sum-of-two-integers/", gf:"https://www.geeksforgeeks.org/add-two-numbers-without-using-arithmetic-operators/"},
+        {t:"Single Number II", d:"Element appearing once (thrice others).", l:"M", lc:"https://leetcode.com/problems/single-number-ii/", gf:"https://www.geeksforgeeks.org/find-the-element-that-appears-once/"},
+        {t:"Single Number III", d:"Two elements appearing once.", l:"M", lc:"https://leetcode.com/problems/single-number-iii/", gf:"https://www.geeksforgeeks.org/find-two-non-repeating-elements-in-an-array-of-repeating-elements/"},
+        {t:"Gray Code", d:"Generate Gray code sequence.", l:"M", lc:"https://leetcode.com/problems/gray-code/", gf:"https://www.geeksforgeeks.org/generate-gray-code-using-recursion/"},
+        {t:"Maximum XOR of Two Numbers", d:"Max XOR pair value.", l:"M", lc:"https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/", gf:"https://www.geeksforgeeks.org/maximum-xor-of-two-numbers-in-an-array/"},
+        {t:"Bitwise AND of Numbers Range", d:"AND of all numbers in range.", l:"M", lc:"https://leetcode.com/problems/bitwise-and-of-numbers-range/", gf:"https://www.geeksforgeeks.org/bitwise-and-of-all-the-elements-of-array/"},
+        {t:"Minimum Bit Flips to Convert Number", d:"Flips needed to convert a to b.", l:"E", lc:"https://leetcode.com/problems/minimum-bit-flips-to-convert-number/", gf:"https://www.geeksforgeeks.org/count-number-of-bits-to-be-flipped-to-convert-a-to-b/"}
+      ]},
+      {id:"math-geometry", title:"Math & Geometry", desc:"Number theory, geometry, prime numbers.",
+        cheat:"<strong>What is it?</strong> Math problems involve number theory, arithmetic, algebra; geometry involves points, lines, shapes, and spatial relationships.<br><strong>Why it matters</strong> Tests mathematical reasoning and ability to translate formulas into code; geometry problems test coordinate systems and edge cases.<br><strong>Real-world uses</strong> Cryptography (prime numbers, GCD), computer graphics (geometry), GPS (distance calculations), error detection (checksums), financial calculations.<br><strong>Key Patterns:</strong> GCD via Euclidean algorithm, prime checking (sieve of Eratosthenes), digit manipulation (reverse integer), geometry (slope, area, collinearity), fast exponentiation (pow).<br><strong>Common Functions & Methods:</strong> <code>Math.sqrt()</code>, <code>Math.pow()</code>, <code>Math.floor()</code>, <code>%</code> for modulo, <code>Math.min()</code>/<code>Math.max()</code>, <code>Math.abs()</code>.<br><strong>Code Templates:</strong> <pre>// GCD (Euclidean)\nfunction gcd(a,b){\n  while(b){ [a,b]=[b,a%b]; }\n  return a;\n}\n// LCM\na*b/gcd(a,b)\n// Prime check\nfunction isPrime(n){\n  if(n<2) return false;\n  for(let i=2;i*i<=n;i++)\n    if(n%i===0) return false;\n  return true;\n}\n// Fast pow\nfunction pow(x,n){\n  if(n===0) return 1;\n  let h=pow(x,Math.floor(n/2));\n  return n%2===0 ? h*h : h*h*x;\n}</pre>",
+      problems:[
+        {t:"Happy Number", d:"Detect happy number cycle.", l:"E", lc:"https://leetcode.com/problems/happy-number/", gf:"https://www.geeksforgeeks.org/happy-number/"},
+        {t:"Ugly Number", d:"Check if number has only 2,3,5 factors.", l:"E", lc:"https://leetcode.com/problems/ugly-number/", gf:"https://www.geeksforgeeks.org/ugly-numbers/"},
+        {t:"Add Digits", d:"Repeatedly add digits until single digit.", l:"E", lc:"https://leetcode.com/problems/add-digits/", gf:"https://www.geeksforgeeks.org/find-sum-digits-number-add-digits/"},
+        {t:"Reverse Integer", d:"Reverse digits of integer.", l:"M", lc:"https://leetcode.com/problems/reverse-integer/", gf:"https://www.geeksforgeeks.org/reverse-digits-of-an-integer-with-overflow-handled/"},
+        {t:"Palindrome Number", d:"Check if integer is palindrome.", l:"E", lc:"https://leetcode.com/problems/palindrome-number/", gf:"https://www.geeksforgeeks.org/check-if-a-number-is-palindrome/"},
+        {t:"Excel Sheet Column Title", d:"Number to Excel column title.", l:"E", lc:"https://leetcode.com/problems/excel-sheet-column-title/", gf:"https://www.geeksforgeeks.org/find-excel-column-name-given-number/"},
+        {t:"Excel Sheet Column Number", d:"Excel column title to number.", l:"E", lc:"https://leetcode.com/problems/excel-sheet-column-number/", gf:"https://www.geeksforgeeks.org/find-excel-column-number-from-column-title/"},
+        {t:"Pow(x, n)", d:"Compute x raised to n.", l:"M", lc:"https://leetcode.com/problems/powx-n/", gf:"https://www.geeksforgeeks.org/write-a-program-to-calculate-powx-n/"},
+        {t:"Sqrt(x)", d:"Compute square root of integer.", l:"E", lc:"https://leetcode.com/problems/sqrtx/", gf:"https://www.geeksforgeeks.org/square-root-of-an-integer/"},
+        {t:"Divide Two Integers", d:"Divide without multiply/divide/mod.", l:"M", lc:"https://leetcode.com/problems/divide-two-integers/", gf:"https://www.geeksforgeeks.org/division-without-using-operator/"},
+        {t:"Count Primes", d:"Count primes less than n.", l:"M", lc:"https://leetcode.com/problems/count-primes/", gf:"https://www.geeksforgeeks.org/sieve-of-eratosthenes/"},
+        {t:"Fraction to Recurring Decimal", d:"Decimal representation of fraction.", l:"M", lc:"https://leetcode.com/problems/fraction-to-recurring-decimal/", gf:"https://www.geeksforgeeks.org/find-recurring-sequence-fraction/"},
+        {t:"Integer Break", d:"Break into sum of positive ints.", l:"M", lc:"https://leetcode.com/problems/integer-break/", gf:"https://www.geeksforgeeks.org/integer-break/"},
+        {t:"Check If It Is a Straight Line", d:"Check if points form a line.", l:"E", lc:"https://leetcode.com/problems/check-if-it-is-a-straight-line/", gf:"https://www.geeksforgeeks.org/program-to-check-if-three-points-are-collinear/"}
+      ]},
+      {id:"trie", title:"Trie", desc:"Prefix tree, autocomplete, word search.",
+        cheat:"<strong>What is it?</strong> Trie (prefix tree) is an N-ary tree where each node represents a character; words are stored by traversing character by character from root.<br><strong>Why it matters</strong> O(L) search/insert (L=word length) regardless of dictionary size; enables fast prefix matching, autocomplete, and spell checking.<br><strong>Real-world uses</strong> Autocomplete (Google search), spell checkers, IP routing (longest prefix match), T9 predictive text, dictionary word games (Boggle).<br><strong>Key Patterns:</strong> Insert words into trie (each node is a character), search exact word, search prefix, DFS for autocomplete/word search, backtracking on trie for Word Search II.<br><strong>Common Functions & Methods:</strong> <code>new TrieNode()</code> with <code>children</code> map and <code>isEnd</code> flag, <code>insert()</code>, <code>search()</code>, <code>startsWith()</code>.<br><strong>Code Templates:</strong> <pre>class TrieNode {\n  constructor() {\n    this.children = {};\n    this.isEnd = false;\n  }\n}\n// Insert\nlet node = root;\nfor(let c of word){\n  if(!node.children[c])\n    node.children[c] = new TrieNode();\n  node = node.children[c];\n}\nnode.isEnd = true;\n// Search\nnode = root;\nfor(let c of word){\n  if(!node.children[c]) return false;\n  node = node.children[c];\n}\nreturn node.isEnd;</pre>",
+      problems:[
+        {t:"Implement Trie (Prefix Tree)", d:"Design a trie data structure.", l:"M", lc:"https://leetcode.com/problems/implement-trie-prefix-tree/", gf:"https://www.geeksforgeeks.org/trie-insert-and-search/"},
+        {t:"Design Add and Search Words", d:"Word search with '.' wildcard.", l:"M", lc:"https://leetcode.com/problems/design-add-and-search-words-data-structure/", gf:"https://www.geeksforgeeks.org/design-add-and-search-words-data-structure/"},
+        {t:"Longest Word in Dictionary", d:"Longest word built one char at a time.", l:"M", lc:"https://leetcode.com/problems/longest-word-in-dictionary/", gf:"https://www.geeksforgeeks.org/longest-word-in-dictionary/"},
+        {t:"Prefix and Suffix Search", d:"Search words by prefix and suffix.", l:"H", lc:"https://leetcode.com/problems/prefix-and-suffix-search/", gf:"https://www.geeksforgeeks.org/prefix-and-suffix-search/"},
+        {t:"Map Sum Pairs", d:"Map with prefix sum queries.", l:"M", lc:"https://leetcode.com/problems/map-sum-pairs/", gf:"https://www.geeksforgeeks.org/map-sum-pairs/"},
+        {t:"Replace Words", d:"Replace words with root from dict.", l:"M", lc:"https://leetcode.com/problems/replace-words/", gf:"https://www.geeksforgeeks.org/replace-words-with-roots-from-dictionary/"},
+        {t:"Implement Magic Dictionary", d:"Search with one edit allowed.", l:"M", lc:"https://leetcode.com/problems/implement-magic-dictionary/", gf:"https://www.geeksforgeeks.org/implement-magic-dictionary/"}
+      ]}
+  ];
+
+  var grid = document.getElementById("topicGrid");
+  var topicView = document.getElementById("topic-view");
+  var gridView = document.getElementById("grid-view");
+  var topicTitle = document.getElementById("topicTitle");
+  var problemList = document.getElementById("problemList");
+  var progressFill = document.getElementById("progressFill");
+  var navBack = document.getElementById("navBack");
+  var diffFilter = document.getElementById("diffFilter");
+  var statsBar = document.getElementById("statsBar");
+  var cheatBody = document.getElementById("cheatBody");
+  var cheatToggle = document.getElementById("cheatToggle");
+  var currentTopic = null;
+
+  function totalProblems(){
+    var c=0; TOPICS.forEach(function(t){c+=t.problems.length}); return c
+  }
+
+  function doneCount(){
+    var c=0; for(var k in data) if(data[k]) c++; return c
+  }
+
+  function updateProgress(){
+    var total = totalProblems();
+    var done = doneCount();
+    var pct = total ? (done/total*100) : 0;
+    progressFill.style.width = pct + "%";
+  }
+
+  function diffStats(){
+    var totals={E:0,M:0,H:0},dones={E:0,M:0,H:0};
+    TOPICS.forEach(function(t){
+      t.problems.forEach(function(p){
+        totals[p.l]=(totals[p.l]||0)+1;
+        if(data[p.t]) dones[p.l]=(dones[p.l]||0)+1;
+      });
+    });
+    return {totals:totals,dones:dones};
+  }
+
+  function updateStats(){
+    var total = totalProblems();
+    var done = doneCount();
+    var ds = diffStats();
+    var html = '<div class="stat-card"><span class="stat-num">'+done+'/'+total+'</span><span class="stat-label">Solved</span></div>'+
+      '<div class="stat-card"><span class="stat-num">'+(ds.dones.E||0)+'/'+(ds.totals.E||0)+'</span><span class="stat-label done" style="color:var(--emerald)">Easy</span></div>'+
+      '<div class="stat-card"><span class="stat-num">'+(ds.dones.M||0)+'/'+(ds.totals.M||0)+'</span><span class="stat-label done" style="color:var(--gold)">Medium</span></div>'+
+      '<div class="stat-card"><span class="stat-num">'+(ds.dones.H||0)+'/'+(ds.totals.H||0)+'</span><span class="stat-label done" style="color:#f87171">Hard</span></div>';
+    var ePct = ds.totals.E ? (ds.dones.E/ds.totals.E*100) : 0;
+    var mPct = ds.totals.M ? (ds.dones.M/ds.totals.M*100) : 0;
+    var hPct = ds.totals.H ? (ds.dones.H/ds.totals.H*100) : 0;
+    html += '<div class="diff-chart"><div class="diff-bar diff-bar-e" style="width:'+ePct+'%"></div><div class="diff-bar diff-bar-m" style="width:'+mPct+'%"></div><div class="diff-bar diff-bar-h" style="width:'+hPct+'%"></div></div>';
+    statsBar.innerHTML = html;
+  }
+
+  function renderGrid(){
+    var html = "";
+    TOPICS.forEach(function(t){
+      var done = 0;
+      t.problems.forEach(function(p){ if(data[p.t]) done++; });
+      var tag = done + "/" + t.problems.length + " done";
+      var cls = done === t.problems.length ? "tag done" : "tag";
+      html += '<div class="topic-card" data-topic="'+t.id+'"><h3>'+esc(t.title)+'</h3><p>'+esc(t.desc)+'</p><span class="'+cls+'">'+tag+'</span></div>';
+    });
+    grid.innerHTML = html;
+    grid.querySelectorAll(".topic-card").forEach(function(card){
+      card.addEventListener("click", function(){ openTopic(card.getAttribute("data-topic")); });
+    });
+    updateProgress();
+    updateStats();
+  }
+
+  function openTopic(id){
+    currentTopic = TOPICS.find(function(t){return t.id===id});
+    if(!currentTopic) return;
+    topicTitle.textContent = currentTopic.title;
+    diffFilter.value = "all";
+    cheatBody.innerHTML = currentTopic.cheat || "";
+    cheatBody.classList.remove("open");
+    cheatToggle.classList.remove("open");
+    cheatToggle.textContent = "Show patterns &amp; cheat sheet ▼";
+    renderProblems();
+    gridView.style.display = "none";
+    topicView.style.display = "block";
+    navBack.classList.add("show");
+  }
+
+  function renderProblems(){
+    var topic = currentTopic;
+    if(!topic) return;
+    var flt = diffFilter.value;
+    var html = "";
+    topic.problems.forEach(function(p){
+      if(flt !== "all" && p.l !== flt) return;
+      var checked = data[p.t] ? "checked" : "";
+      html += '<div class="problem-item'+(checked?" done":"")+'" data-problem="'+escAttr(p.t)+'">'+
+        '<input type="checkbox" class="problem-check" '+checked+' />'+
+        '<div class="problem-info"><div class="problem-title">'+esc(p.t)+'</div><div class="problem-desc">'+esc(p.d)+'</div>'+
+        '<span class="problem-diff diff-'+p.l+'">'+diff[p.l]+'</span></div>'+
+        '<div class="problem-links">'+
+        '<a href="'+escAttr(p.lc)+'" target="_blank" rel="noopener" class="lc-link">LeetCode</a>'+
+        '<a href="'+escAttr(p.gf)+'" target="_blank" rel="noopener" class="gfg-link">GFG</a>'+
+        '</div></div>';
+    });
+    problemList.innerHTML = html || "<p style='color:var(--muted);padding:1rem'>No problems match this filter.</p>";
+    problemList.querySelectorAll(".problem-check").forEach(function(cb){
+      cb.addEventListener("change", function(){
+        var item = cb.closest(".problem-item");
+        var title = item.getAttribute("data-problem");
+        if(cb.checked){ data[title] = true; item.classList.add("done"); }
+        else { delete data[title]; item.classList.remove("done"); }
+        save();
+        updateGridCounts();
+        updateProgress();
+        updateStats();
+      });
+    });
+  }
+
+  function updateGridCounts(){
+    TOPICS.forEach(function(t){
+      var done = 0;
+      t.problems.forEach(function(p){ if(data[p.t]) done++; });
+      var cards = grid.querySelectorAll(".topic-card");
+      for(var i=0;i<cards.length;i++){
+        if(cards[i].getAttribute("data-topic")===t.id){
+          var tag = cards[i].querySelector(".tag");
+          if(tag){
+            tag.textContent = done + "/" + t.problems.length + " done";
+            tag.className = "tag" + (done===t.problems.length?" done":"");
+          }
+          break;
+        }
+      }
+    });
+    updateStats();
+  }
+
+  function closeTopic(){
+    gridView.style.display = "block";
+    topicView.style.display = "none";
+    navBack.classList.remove("show");
+    renderGrid();
+  }
+
+  function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+  function escAttr(s){return String(s).replace(/"/g,"&quot;")}
+
+  document.getElementById("backBtn").addEventListener("click", closeTopic);
+  navBack.addEventListener("click", closeTopic);
+  document.getElementById("chestBack").addEventListener("click", function(){ window.location='index.html'; });
+  document.getElementById("logoHome").addEventListener("click", function(){ if(topicView.style.display==="block") closeTopic() });
+  diffFilter.addEventListener("change", renderProblems);
+
+  cheatToggle.addEventListener("click", function(){
+    var open = cheatBody.classList.toggle("open");
+    cheatToggle.classList.toggle("open");
+    cheatToggle.textContent = open ? "Hide patterns &amp; cheat sheet ▲" : "Show patterns &amp; cheat sheet ▼";
+  });
+
+  renderGrid();
+})();
+</script>
+</body>
+</html>

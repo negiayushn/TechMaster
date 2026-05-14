@@ -47,6 +47,8 @@
   if (typeof state.streak !== "number") state.streak = 0;
   if (!state.lastDate) state.lastDate = "";
 
+  var pageHistory = [];
+
   var interviewExtra = loadJSON(SK.interview, { done: {}, bookmarks: {} });
   var favProjects = loadJSON(SK.favoritesProjects, {});
   var projOverrides = loadJSON(SK.projectOverrides, {});
@@ -123,7 +125,12 @@
     if ((state.xp || 0) >= 500) unlockAch("xp-500", "500 XP");
   }
 
-  function showPage(id) {
+  function showPage(id, noHistory) {
+    var old = document.querySelector(".page.active");
+    if (old && !noHistory) {
+      var oldId = old.id.replace("page-", "");
+      if (oldId !== id) pageHistory.push(oldId);
+    }
     document.querySelectorAll(".page").forEach(function (p) {
       p.classList.remove("active");
     });
@@ -139,12 +146,15 @@
       b.classList.toggle("active", b.getAttribute("data-nav") === id);
     });
     document.body.classList.toggle("page-dashboard", id === "dashboard");
+    document.body.classList.toggle("page-home", id === "home");
     window.scrollTo(0, 0);
     document.getElementById("nav-drawer").classList.remove("open");
     var toggle = document.getElementById("nav-toggle");
     if (toggle) toggle.setAttribute("aria-expanded", "false");
     var target = page && id !== "home" && page.querySelector("h2");
     if (target) target.setAttribute("tabindex", "-1"), target.focus();
+    updatePageNav(id);
+    updateBackBtn();
     recordVisit();
     if (id === "documentation") renderDocs();
     if (id === "projects") renderProjects();
@@ -172,7 +182,12 @@
     function bind(container) {
       container.querySelectorAll("[data-nav]").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          showPage(btn.getAttribute("data-nav"));
+          var id = btn.getAttribute("data-nav");
+          if (id === "chest" && typeof showChestSurprise === "function") {
+            showChestSurprise();
+          } else {
+            showPage(id);
+          }
         });
       });
     }
@@ -470,6 +485,16 @@
     gf.addEventListener("change", renderDocsSidebar);
     document.getElementById("docs-search-input").addEventListener("input", function () {
       renderDocsSidebar();
+    });
+    var ts = document.getElementById("docs-topic-select");
+    window.TMDocs.DOC_INDEX.forEach(function (d) {
+      var o = document.createElement("option");
+      o.value = d.id;
+      o.textContent = d.title;
+      ts.appendChild(o);
+    });
+    ts.addEventListener("change", function () {
+      if (ts.value) { currentDocId = ts.value; renderDocs(); ts.value = ""; }
     });
     document.getElementById("docs-breadcrumb").addEventListener("click", function (e) {
       var a = e.target.closest("[data-doc-home]");
@@ -2466,6 +2491,59 @@
     sel.addEventListener("change", updateCustomTrigger);
   }
 
+  function updatePageNav(id) {
+    var label = document.getElementById("page-nav-label");
+    if (!label) return;
+    var pages = C.PAGES;
+    for (var i = 0; i < pages.length; i++) {
+      if (pages[i].id === id) {
+        label.textContent = (i + 1) + " / " + pages.length;
+        break;
+      }
+    }
+  }
+
+  function initPageNav() {
+    var pages = C.PAGES;
+    document.getElementById("page-prev").addEventListener("click", function () {
+      var cur = document.querySelector(".page.active");
+      if (!cur) return;
+      var curId = cur.id.replace("page-", "");
+      for (var i = 0; i < pages.length; i++) {
+        if (pages[i].id === curId) {
+          var prev = (i - 1 + pages.length) % pages.length;
+          showPage(pages[prev].id);
+          break;
+        }
+      }
+    });
+    document.getElementById("page-next").addEventListener("click", function () {
+      var cur = document.querySelector(".page.active");
+      if (!cur) return;
+      var curId = cur.id.replace("page-", "");
+      for (var i = 0; i < pages.length; i++) {
+        if (pages[i].id === curId) {
+          var next = (i + 1) % pages.length;
+          showPage(pages[next].id);
+          break;
+        }
+      }
+    });
+  }
+
+  function updateBackBtn() {
+    var btn = document.getElementById("nav-back");
+    if (btn) btn.classList.toggle("visible", pageHistory.length > 0);
+  }
+
+  function initBackButton() {
+    document.getElementById("nav-back").addEventListener("click", function () {
+      if (pageHistory.length < 1) return;
+      var id = pageHistory.pop();
+      showPage(id, true);
+    });
+  }
+
   function initCustomSelects() {
     ["docs-group-filter", "proj-cat", "proj-tier", "int-tech", "int-diff", "fb-type"].forEach(function (id) {
       var el = document.getElementById(id);
@@ -2489,6 +2567,9 @@
   initAnimations();
   initParticles();
   initStatsHome();
+  initPageNav();
+  initBackButton();
+  updatePageNav("home");
   globalSearch("");
   renderProjects();
   renderDashboard();
@@ -2525,7 +2606,50 @@
 
   document.querySelectorAll(".card[data-nav]").forEach(function (c) {
     c.addEventListener("click", function () {
-      showPage(c.getAttribute("data-nav"));
+      var id = c.getAttribute("data-nav");
+      if (id === "chest") {
+        showChestSurprise();
+      } else {
+        showPage(id);
+      }
     });
   });
+
+  function showChestSurprise(){
+    var overlay = document.getElementById("chestOverlay");
+    var container = document.getElementById("chestSparkles");
+    container.innerHTML = "";
+    for(var i=0;i<40;i++){
+      var p = document.createElement("div");
+      p.className = "chest-particle";
+      var angle = Math.random() * 360;
+      var dist = 80 + Math.random() * 250;
+      var rad = angle * Math.PI / 180;
+      p.style.setProperty("--x", "0px");
+      p.style.setProperty("--y", "0px");
+      p.style.setProperty("--xe", Math.cos(rad)*dist + "px");
+      p.style.setProperty("--ye", Math.sin(rad)*dist + "px");
+      p.style.setProperty("--dur", (0.5 + Math.random() * 0.8) + "s");
+      p.style.left = "50%";
+      p.style.top = "50%";
+      var colors = ["#D4AF37","#FFD700","#FFF8DC","#DAA520","#F0E68C","#FFDF00"];
+      p.style.background = colors[Math.floor(Math.random()*colors.length)];
+      p.style.width = (3+Math.random()*5)+"px";
+      p.style.height = p.style.width;
+      container.appendChild(p);
+    }
+    overlay.classList.add("active");
+    setTimeout(function(){ overlay.classList.remove("active"); showPage("chest"); }, 1300);
+  }
+
+  // LifeQuest
+  var lqCard = document.getElementById("lifequestCard");
+  var lqOverlay = document.getElementById("lqOverlay");
+  if(lqCard && lqOverlay){
+    lqCard.addEventListener("click", function(){ lqOverlay.classList.add("active"); });
+    document.getElementById("lqCancel").addEventListener("click", function(){ lqOverlay.classList.remove("active"); });
+    document.getElementById("lqConfirm").addEventListener("click", function(){ lqOverlay.classList.remove("active"); window.open("https://life-quest-lac.vercel.app","_blank"); });
+    lqOverlay.addEventListener("click", function(e){ if(e.target===lqOverlay) lqOverlay.classList.remove("active"); });
+  }
+
 })();

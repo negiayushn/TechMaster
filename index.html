@@ -55,7 +55,6 @@
 
   <nav aria-label="Main navigation">
     <div class="nav-left">
-      <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-controls="nav-drawer">☰</button>
       <div class="nav-logo" data-nav="home">
         <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
           <circle cx="14" cy="14" r="13" stroke="#D4AF37" stroke-width="1.5" />
@@ -67,6 +66,7 @@
     </div>
     <div class="nav-links" id="nav-links"></div>
     <div class="nav-actions">
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-controls="nav-drawer">☰</button>
       <button type="button" class="nav-icon-btn" id="btn-global-search" title="Search (Ctrl+K)" aria-label="Search">⌕</button>
       <button type="button" class="nav-icon-btn" id="btn-code-theme" title="Toggle code theme" aria-label="Toggle code theme">◐</button>
       <button type="button" class="nav-icon-btn" id="btn-ui-theme" title="Toggle UI theme" aria-label="Toggle UI theme">☾</button>
@@ -108,6 +108,7 @@
         <div class="card c-emerald reveal reveal-d2" data-nav="projects"><div class="card-icon" style="background:rgba(16,185,129,.15)">🧱</div><h3>Project Lab</h3><p>Beginner → production-grade builds with architecture notes, deployment paths, and interview talking points.</p><div class="card-tag" style="background:rgba(16,185,129,.15);color:var(--emerald)">Portfolio-ready</div></div>
         <div class="card c-violet reveal reveal-d3" data-nav="interview"><div class="card-icon" style="background:rgba(139,92,246,.15)">🎤</div><h3>Interview Dojo</h3><p>Massive question bank with filters, bookmarks, completion tracking, and senior-level follow-ups.</p><div class="card-tag" style="background:rgba(139,92,246,.15);color:var(--violet)">Spaced repetition</div></div>
         <div class="card c-cyan reveal reveal-d4" data-nav="dashboard"><div class="card-icon" style="background:rgba(6,182,212,.15)">📈</div><h3>Productivity Dashboard</h3><p>XP, streaks, heatmaps, goals, achievements, and analytics tied to your real activity on the platform.</p><div class="card-tag" style="background:rgba(6,182,212,.15);color:var(--cyan)">Local-first</div></div>
+        <div class="card c-gold reveal reveal-d5" data-nav="chest"><div class="card-icon" style="background:rgba(212,175,55,.15)">⚔</div><h3>Chest</h3><p>Surprise awaiting for you.</p><div class="card-tag" style="background:rgba(212,175,55,.15)">Explore</div></div>
       </div>
     </div>
     <!-- FEEDBACK -->
@@ -129,7 +130,7 @@
           </select>
         </label>
         <label><span>Message</span><textarea id="fb-message" placeholder="Describe your feedback or suggestion in detail..." required></textarea></label>
-        <button type="submit" class="btn-primary">Send Feedback →</button>
+        <button type="submit" class="btn-primary">Send Feedback</button>
       </form>
       <div class="feedback-success" id="fb-success" role="status">
         <div class="icon">✉️</div>
@@ -159,6 +160,7 @@
       <div class="toolbar docs-toolbar">
         <button type="button" class="btn-ghost doc-sidebar-toggle" id="docs-sidebar-toggle" aria-controls="docs-sidebar" aria-expanded="false">Topics</button>
         <input type="search" id="docs-search-input" class="search-lg" placeholder="Filter topics (e.g. React, JWT, Postgres)…" autocomplete="off" aria-label="Filter documentation topics" />
+        <select id="docs-topic-select" aria-label="Jump to topic" style="padding:10px 36px 10px 14px;border-radius:10px;background-color:#0b1224;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 12px center;border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;-webkit-appearance:none;appearance:none;cursor:pointer"><option value="">Jump to topic…</option></select>
         <select id="docs-group-filter" aria-label="Filter by group" style="padding:10px 36px 10px 14px;border-radius:10px;background-color:rgba(255,255,255,.05);background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E&quot;);background-repeat:no-repeat;background-position:right 12px center;border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;-webkit-appearance:none;appearance:none;cursor:pointer"></select>
       </div>
       <div class="doc-shell" id="doc-shell">
@@ -320,10 +322,10 @@
         <div class="dash-split">
           <div class="panel">
             <h3>Daily planner</h3>
-            <div style="display:flex;gap:8px;margin-bottom:.75rem">
+            <div class="planner-row" style="display:flex;gap:8px;margin-bottom:.75rem">
               <input id="planner-input" type="text" placeholder="Deep work block…" aria-label="Task description" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text)" />
               <input id="planner-min" type="number" min="5" step="5" value="25" aria-label="Minutes for task" style="width:90px;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text)" />
-              <button type="button" class="btn-primary" id="planner-add">Add</button>
+              <button type="button" class="btn-primary" id="planner-add">Add Task</button>
             </div>
             <div id="planner-list"></div>
           </div>
@@ -368,6 +370,30 @@
     <footer><strong>TechMaster Dashboard</strong> — What gets measured gets improved.</footer>
   </div>
 
+  <!-- CHEST -->
+  <div id="page-chest" class="page">
+    <div class="section section-wide">
+      <span class="section-label reveal">Chest</span>
+      <h2 class="section-title reveal reveal-d1">Problem solving &amp; DSA</h2>
+      <p style="color:var(--muted);margin-bottom:1.5rem;max-width:640px">Sharpen your problem-solving skills with curated DSA challenges and resources.</p>
+      <div class="cards-grid">
+        <div class="card c-gold" onclick="window.location='dsa.html'" style="cursor:pointer">
+          <div class="card-icon" style="background:rgba(212,175,55,.15)">⚔</div>
+          <h3>DSA Practice</h3>
+          <p>Open the DSA workbook — arrays, graphs, DP, and more.</p>
+          <div class="card-tag">Open →</div>
+        </div>
+        <div class="card c-emerald" id="lifequestCard" style="cursor:pointer">
+          <div class="card-icon" style="background:rgba(16,185,129,.15)">🎮</div>
+          <h3>LifeQuest</h3>
+          <p>Gamify your life and track.</p>
+          <div class="card-tag">Explore →</div>
+        </div>
+      </div>
+    </div>
+    <footer><strong>TechMaster Chest</strong> — Your DSA arsenal.</footer>
+  </div>
+
   </main>
 
   <!-- PROJECT MODAL -->
@@ -388,6 +414,27 @@
   </div>
 
   <div class="toast-wrap" id="toast-wrap" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- CHEST SURPRISE OVERLAY -->
+  <div class="chest-overlay" id="chestOverlay" aria-hidden="true">
+    <div class="chest-sparkles" id="chestSparkles"></div>
+    <div class="chest-text">✨ Surprise! ✨</div>
+  </div>
+
+  <!-- LIFEQUEST CONFIRMATION -->
+  <div class="lq-overlay" id="lqOverlay" aria-hidden="true">
+    <div class="lq-modal">
+      <div class="lq-icon">🎮</div>
+      <h3>LifeQuest Awaits!</h3>
+      <p>You are going to another app to log your daily life and become a master player.</p>
+      <div class="lq-buttons">
+        <button type="button" class="btn-ghost" id="lqCancel">Not now</button>
+        <button type="button" class="btn-primary" id="lqConfirm">Let's go!</button>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="nav-back" id="nav-back" aria-label="Go back to previous page">←</button>
   <div class="fab-stack">
     <button type="button" class="fab secondary" id="fab-quick" title="Quick nav" aria-label="Quick nav">⌁</button>
     <button type="button" class="fab" id="fab-top" title="Back to top" aria-label="Back to top">↑</button>
@@ -399,6 +446,12 @@
     <button type="button" data-nav="documentation" class="bottom-nav-btn">Docs</button>
     <button type="button" data-nav="projects" class="bottom-nav-btn">Build</button>
     <button type="button" data-nav="dashboard" class="bottom-nav-btn">Dash</button>
+    <button type="button" data-nav="chest" class="bottom-nav-btn">Chest</button>
+  </nav>
+  <nav class="page-nav-mobile" aria-label="Page navigation">
+    <button type="button" class="page-nav-btn" id="page-prev" aria-label="Previous page">‹</button>
+    <span class="page-nav-label" id="page-nav-label">1 / 9</span>
+    <button type="button" class="page-nav-btn" id="page-next" aria-label="Next page">›</button>
   </nav>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" integrity="sha384-F/bZzf7p3Joyp5psL90p/p89AZJsndkSoGwRpXcZhleCWhd8SnRuoYo4d0yirjJp" crossorigin="anonymous" defer></script>
