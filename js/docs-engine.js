@@ -9,6 +9,7 @@
     { id: "devops", label: "DevOps & Cloud" },
     { id: "security", label: "Security" },
     { id: "data-ai", label: "Data Science & AI" },
+    { id: "blockchain", label: "Blockchain & Web3" },
   ];
 
   function entry(id, title, group, oneLiner, official) {
@@ -84,6 +85,42 @@
     entry("llm-basics", "LLM Basics", "data-ai", "Tokens, context windows, prompting, and evaluation beyond loss curves.", "https://platform.openai.com/docs/guides/prompt-engineering"),
     entry("rag-systems", "RAG Systems", "data-ai", "Retrieval-augmented generation: chunking, embeddings, and grounding.", "https://arxiv.org/abs/2005.11401"),
     entry("vector-databases", "Vector Databases", "data-ai", "ANN indexes, metadata filters, and hybrid search patterns.", "https://www.pinecone.io/learn/vector-database/"),
+
+    // === FRONTEND (additions) ===
+    entry("svelte", "Svelte", "frontend", "Compiled UI framework with reactive declarations and minimal runtime.", "https://svelte.dev/docs"),
+    entry("threejs", "Three.js", "frontend", "3D rendering pipeline for the browser using WebGL/WebGPU.", "https://threejs.org/docs/"),
+    entry("gsap", "GSAP", "frontend", "High-performance animation library with timeline control and easing.", "https://gsap.com/docs/"),
+
+    // === BACKEND (additions) ===
+    entry("socketio", "Socket.io", "backend", "Bidirectional real-time communication with fallback transport negotiation.", "https://socket.io/docs/"),
+    entry("fastapi", "FastAPI", "backend", "Modern Python web framework with async support and automatic OpenAPI docs.", "https://fastapi.tiangolo.com/"),
+    entry("kafka", "Apache Kafka", "backend", "Distributed event streaming for decoupled microservices and real-time pipelines.", "https://kafka.apache.org/documentation/"),
+    entry("elasticsearch", "Elasticsearch", "backend", "Distributed search and analytics engine built on Apache Lucene.", "https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html"),
+    entry("trpc", "tRPC", "backend", "End-to-end type-safe APIs via function calls with zero schema DSL.", "https://trpc.io/docs"),
+
+    // === DEVOPS (additions) ===
+    entry("prometheus", "Prometheus", "devops", "Pull-based metrics collection with powerful PromQL query language.", "https://prometheus.io/docs/introduction/overview/"),
+    entry("grafana", "Grafana", "devops", "Unified observability dashboards for metrics, logs, and traces.", "https://grafana.com/docs/grafana/latest/"),
+    entry("helm", "Helm", "devops", "Kubernetes package manager with charts, templating, and rollback.", "https://helm.sh/docs/"),
+    entry("vault", "Vault", "devops", "Secrets management, dynamic secrets, and encryption-as-a-service.", "https://developer.hashicorp.com/vault/docs"),
+
+    // === SECURITY (additions) ===
+    entry("trivy", "Trivy", "security", "All-in-one vulnerability scanner for containers, filesystems, and repos.", "https://trivy.dev/docs/"),
+    entry("opa", "Open Policy Agent (OPA)", "security", "Unified policy engine with declarative Rego language for authorization.", "https://www.openpolicyagent.org/docs/latest/"),
+
+    // === DATA-AI (additions) ===
+    entry("langchain", "LangChain", "data-ai", "Framework for chaining LLM calls with tools, memory, and retrieval.", "https://python.langchain.com/docs/introduction/"),
+    entry("huggingface", "Hugging Face", "data-ai", "Model hub, inference APIs, and libraries for NLP, CV, and audio.", "https://huggingface.co/docs"),
+    entry("xgboost", "XGBoost", "data-ai", "Scalable gradient-boosted decision tree framework with GPU support.", "https://xgboost.readthedocs.io/"),
+    entry("mlflow", "MLflow", "data-ai", "Open-source MLOps platform for tracking experiments and deploying models.", "https://mlflow.org/docs/latest/"),
+    entry("shap", "SHAP", "data-ai", "Game-theoretic model explanations with consistent feature attribution.", "https://shap.readthedocs.io/"),
+
+    // === BLOCKCHAIN ===
+    entry("solidity", "Solidity", "blockchain", "Object-oriented high-level language for EVM smart contracts.", "https://docs.soliditylang.org/"),
+    entry("hardhat", "Hardhat", "blockchain", "Ethereum dev environment with debugging, testing, and local network.", "https://hardhat.org/docs"),
+    entry("ethersjs", "ethers.js", "blockchain", "Complete Ethereum wallet implementation and contract interaction library.", "https://docs.ethers.org/"),
+    entry("openzeppelin", "OpenZeppelin", "blockchain", "Audited smart contract library for ERC standards and access control.", "https://docs.openzeppelin.com/contracts/"),
+    entry("ipfs", "IPFS", "blockchain", "Decentralized content-addressed storage protocol for Web3 assets.", "https://docs.ipfs.tech/"),
   ];
 
   function esc(s) {

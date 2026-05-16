@@ -6,6 +6,286 @@
   var C = window.TM_CONFIG;
   var SK = C.STORAGE_KEYS;
 
+  // Supabase config
+  var SUPABASE_EDGE_URL = "https://rscslbxdhhkkjltpenxn.supabase.co/functions/v1/get-data";
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzY3NsYnhkaGhra2psdHBlbnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NTMwOTYsImV4cCI6MjA5NDQyOTA5Nn0.cBSdIp88Dn9A3636Zq56IfC_KG9VMdK5Ggj8P966BQs";
+  var SUPABASE_URL = "https://rscslbxdhhkkjltpenxn.supabase.co";
+
+  // Auth state
+  var supabaseClient = null;
+  var currentUser = null;
+
+  function initAuth() {
+    try {
+      if (typeof supabase !== "undefined") {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch(e) {}
+    var saved = localStorage.getItem("tm-auth-user");
+    if (saved) { try { currentUser = JSON.parse(saved); } catch(e) {} }
+    updateAuthUI();
+    if (currentUser) {
+      syncFromSupabase();
+    }
+    // Auto-sync every 30s when user is signed in
+    setInterval(function() {
+      if (currentUser) syncToSupabase();
+    }, 30000);
+  }
+
+  function updateAuthUI() {
+    var btn = document.getElementById("btn-login");
+    if (!btn) return;
+    if (currentUser) {
+      btn.innerHTML = currentUser.email ? currentUser.email.charAt(0).toUpperCase() : "U";
+      btn.style.width = "32px";
+      btn.style.height = "32px";
+      btn.style.borderRadius = "50%";
+      btn.style.background = "linear-gradient(135deg,var(--gold),#daa520)";
+      btn.style.color = "#020617";
+      btn.style.fontWeight = "700";
+      btn.style.fontSize = ".8rem";
+      btn.title = currentUser.email || "Signed in";
+      btn.onclick = function() { openProfilePanel(); };
+    } else {
+      btn.innerHTML = "👤";
+      btn.style.width = "";
+      btn.style.height = "";
+      btn.style.borderRadius = "";
+      btn.style.background = "";
+      btn.style.color = "";
+      btn.style.fontWeight = "";
+      btn.style.fontSize = "";
+      btn.title = "Sign in";
+      btn.onclick = function() {
+        var overlay = document.getElementById('auth-overlay');
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+      };
+    }
+  }
+
+  function openProfilePanel() {
+    var panel = document.getElementById("profile-panel");
+    if (!panel) return;
+    document.getElementById("profile-email").textContent = currentUser ? currentUser.email : "";
+    document.getElementById("profile-avatar").textContent = currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : "U";
+
+    // Load saved avatar
+    var savedAvatar = localStorage.getItem("tm-profile-avatar");
+    if (savedAvatar) document.getElementById("profile-avatar").innerHTML = '<img src="' + savedAvatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />';
+
+    // Joined date
+    var joinedEl = document.getElementById("profile-joined");
+    if (currentUser && currentUser.id) {
+      var key = "tm-user-created-" + currentUser.id;
+      var savedDate = localStorage.getItem(key);
+      if (savedDate) joinedEl.textContent = savedDate;
+      else { joinedEl.textContent = "Today"; localStorage.setItem(key, new Date().toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"})); }
+    }
+
+    // Study time
+    var totalMinutes = 0, dayCount = 0;
+    if (state && state.studyLog) {
+      Object.keys(state.studyLog).forEach(function(k) {
+        var m = parseInt(state.studyLog[k]) || 0;
+        if (m > 0) { totalMinutes += m; dayCount++; }
+      });
+    }
+    var hours = Math.floor(totalMinutes / 60);
+    var mins = totalMinutes % 60;
+    document.getElementById("profile-studytime").textContent = hours > 0 ? hours + "h " + mins + "m" : mins + "m";
+    document.getElementById("profile-dailyavg").textContent = dayCount > 0 ? Math.round(totalMinutes / dayCount) + " min/day" : "-";
+
+    panel.classList.add("open");
+  }
+
+  // Avatar upload handler
+  document.addEventListener("change", function(e) {
+    if (e.target.id === "profile-avatar-input" && e.target.files && e.target.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var dataUrl = ev.target.result;
+        localStorage.setItem("tm-profile-avatar", dataUrl);
+        document.getElementById("profile-avatar").innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover" />';
+        toast("Profile photo updated!");
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+
+  function handleAuth() {
+    var form = document.getElementById("auth-form");
+    var overlay = document.getElementById("auth-overlay");
+    var error = document.getElementById("auth-error");
+    var submit = document.getElementById("auth-submit");
+    var switchBtn = document.getElementById("auth-switch");
+    var title = document.getElementById("auth-title");
+    var sub = document.getElementById("auth-sub");
+    var mobileField = document.getElementById("auth-mobile-field");
+    var forgotBtn = document.getElementById("auth-forgot");
+    var isSignUp = false;
+
+    if (!form) return;
+
+    // Profile panel events
+    var ppClose = document.getElementById("profile-panel-close");
+    if (ppClose) ppClose.addEventListener("click", function() { document.getElementById("profile-panel").classList.remove("open"); });
+    var ppBg = document.getElementById("profile-panel-bg");
+    if (ppBg) ppBg.addEventListener("click", function() { document.getElementById("profile-panel").classList.remove("open"); });
+    var ppSignout = document.getElementById("profile-signout");
+    if (ppSignout) ppSignout.addEventListener("click", function() {
+      currentUser = null;
+      localStorage.removeItem("tm-auth-user");
+      updateAuthUI();
+      document.getElementById("profile-panel").classList.remove("open");
+      toast("Signed out");
+      if (typeof renderDashboard === "function") renderDashboard();
+    });
+
+    switchBtn.addEventListener("click", function() {
+      isSignUp = !isSignUp;
+      title.textContent = isSignUp ? "Create Account" : "Welcome to TechMaster";
+      sub.textContent = isSignUp ? "Sign up to save your progress" : "Sign in to save your progress";
+      submit.textContent = isSignUp ? "Sign Up" : "Sign In";
+      switchBtn.textContent = isSignUp ? "Sign in" : "Sign up";
+      error.textContent = "";
+      if (mobileField) mobileField.style.display = isSignUp ? "block" : "none";
+    });
+
+    // Forgot password
+    forgotBtn.addEventListener("click", async function() {
+      var email = document.getElementById("auth-email").value.trim();
+      if (!email) { error.textContent = "Enter your email first"; return; }
+      if (!supabaseClient) { error.textContent = "Auth not available"; return; }
+      forgotBtn.disabled = true;
+      forgotBtn.textContent = "Sending...";
+      var { error: err } = await supabaseClient.auth.resetPasswordForEmail(email);
+      if (err) { error.textContent = err.message; } else { error.textContent = ""; toast("Password reset email sent!"); }
+      forgotBtn.disabled = false;
+      forgotBtn.textContent = "Forgot password?";
+    });
+
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      var email = document.getElementById("auth-email").value.trim();
+      var password = document.getElementById("auth-password").value.trim();
+      var mobile = document.getElementById("auth-mobile") ? document.getElementById("auth-mobile").value.trim() : "";
+      if (!email || !password) { error.textContent = "Fill in all fields"; return; }
+      submit.disabled = true;
+      submit.textContent = "Please wait...";
+      error.textContent = "";
+
+      try {
+        if (!supabaseClient) { error.textContent = "Auth not available"; submit.disabled = false; submit.textContent = isSignUp ? "Sign Up" : "Sign In"; return; }
+        var result;
+        if (isSignUp) {
+          result = await supabaseClient.auth.signUp({ email: email, password: password, options: { data: { mobile: mobile } } });
+          if (result.data && result.data.user && !result.error) {
+            currentUser = { id: result.data.user.id, email: result.data.user.email };
+            localStorage.setItem("tm-auth-user", JSON.stringify(currentUser));
+            updateAuthUI();
+            overlay.classList.remove("open");
+            var syncResult = await syncFromSupabase();
+            toast(syncResult === "restored" ? "Progress restored from cloud!" : "Account created! Check email for confirmation.");
+          } else {
+            error.textContent = result.error ? result.error.message : "Sign up failed";
+          }
+        } else {
+          result = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+          if (result.data && result.data.user && !result.error) {
+            currentUser = { id: result.data.user.id, email: result.data.user.email };
+            localStorage.setItem("tm-auth-user", JSON.stringify(currentUser));
+            updateAuthUI();
+            overlay.classList.remove("open");
+            var syncResult = await syncFromSupabase();
+            toast(syncResult === "restored" ? "Progress restored from cloud!" : "Signed in successfully!");
+            if (typeof renderDashboard === "function") renderDashboard();
+          } else {
+            error.textContent = result.error ? result.error.message : "Invalid credentials";
+          }
+        }
+      } catch(e) { error.textContent = "Connection error"; }
+      submit.disabled = false;
+      submit.textContent = isSignUp ? "Sign Up" : "Sign In";
+    });
+
+    document.getElementById("auth-close").addEventListener("click", function() {
+      var overlay = document.getElementById("auth-overlay");
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+    });
+    overlay.addEventListener("click", function(e) { if (e.target === overlay) overlay.classList.remove("open"); });
+
+    // Password visibility toggle
+    var pwToggle = document.getElementById("auth-toggle-pw");
+    var pwInput = document.getElementById("auth-password");
+    if (pwToggle && pwInput) {
+      pwToggle.addEventListener("click", function() {
+        if (pwInput.type === "password") {
+          pwInput.type = "text";
+          pwToggle.textContent = "👁️";
+        } else {
+          pwInput.type = "password";
+          pwToggle.textContent = "🙈";
+        }
+      });
+    }
+  }
+
+  // Sync functions for Supabase
+  function getAllUserData() {
+    return { state: state, interviewExtra: interviewExtra, favProjects: favProjects, projOverrides: projOverrides, roadmapProg: roadmapProg, avatar: localStorage.getItem("tm-profile-avatar") || "" };
+  }
+
+  function restoreAllUserData(data) {
+    if (data.state) { Object.assign(state, data.state); saveJSON(SK.progress, state); }
+    if (data.interviewExtra) { Object.assign(interviewExtra, data.interviewExtra); saveJSON(SK.interview, interviewExtra); }
+    if (data.favProjects) { favProjects = data.favProjects; saveJSON(SK.favoritesProjects, favProjects); }
+    if (data.projOverrides) { projOverrides = data.projOverrides; saveJSON(SK.projectOverrides, projOverrides); }
+    if (data.roadmapProg) { roadmapProg = data.roadmapProg; saveJSON(SK.roadmapTopics, roadmapProg); }
+    if (data.avatar) { localStorage.setItem("tm-profile-avatar", data.avatar); }
+  }
+
+  async function syncToSupabase() {
+    if (!currentUser || !supabaseClient) return;
+    try {
+      var data = getAllUserData();
+      var { error } = await supabaseClient.from("user_data").upsert(
+        { id: currentUser.id, data: data, updated_at: new Date().toISOString() },
+        { onConflict: "id" }
+      );
+      if (error) console.warn("Sync error:", error.message);
+    } catch(e) {}
+  }
+
+  async function syncFromSupabase() {
+    if (!currentUser || !supabaseClient) return "no_user";
+    try {
+      var { data: row, error } = await supabaseClient.from("user_data").select("data").eq("id", currentUser.id).single();
+      if (error) return "no_data";
+      if (row && row.data) {
+        restoreAllUserData(row.data);
+        return "restored";
+      }
+    } catch(e) {}
+    return "error";
+  }
+
+  function getTopicEmoji(topicId) {
+    var emojis = { html: "📄", css: "🎨", javascript: "⚡", react: "⚛️", nextjs: "▲", nodejs: "🟢", express: "🚀", mongodb: "🍃", sql: "🗃️", docker: "🐳", kubernetes: "☸️", aws: "☁️", security: "🔒", python: "🐍", ml: "🤖", dataai: "📊" };
+    return emojis[topicId] || "📚";
+  }
+
+  async function loadInterviewTopics() {
+    var topics = []; bank.forEach(function(item) { var tid = item.technology; if (!topics.find(function(t) { return t.id === tid; })) topics.push({ id: tid, name: item.technologyLabel || tid }); });
+    return topics;
+  }
+
+  async function loadInterviewQuestions(topicId) {
+    return bank.filter(function(b) { return b.technology === topicId; });
+  }
+
   function loadJSON(key, fallback) {
     try {
       var v = localStorage.getItem(key);
@@ -60,6 +340,7 @@
     saveJSON(SK.favoritesProjects, favProjects);
     saveJSON(SK.projectOverrides, projOverrides);
     saveJSON(SK.roadmapTopics, roadmapProg);
+    syncToSupabase();
   }
 
   function todayStr() {
@@ -800,129 +1081,143 @@
     document.getElementById("stat-questions").textContent = bank.length + "+";
   }
 
-  function renderInterviews() {
-    var tech = document.getElementById("int-tech").value;
-    var diff = document.getElementById("int-diff").value;
-    var q = (document.getElementById("int-search").value || "").toLowerCase();
-    var list = bank.filter(function (item) {
-      var okT = tech === "all" || item.technology === tech;
-      var okD = diff === "all" || item.difficulty === diff || item.category === diff;
-      var text = (item.question + " " + item.answer + " " + (item.technologyLabel || "")).toLowerCase();
-      var okQ = !q || text.indexOf(q) >= 0;
-      return okT && okD && okQ;
+  var interviewTopicsLoaded = false;
+  var currentInterviewTopic = null;
+  var currentTopicId = null;
+  var currentTopicName = null;
+
+  window.showInterviewTopics = function() {
+    currentInterviewTopic = null;
+    currentTopicId = null;
+    currentTopicName = null;
+    interviewTopicsLoaded = false;
+    renderInterviews();
+  };
+
+  async function showInterviewQuestions(topicId, topicName) {
+    currentInterviewTopic = topicId;
+    currentTopicId = topicId;
+    currentTopicName = topicName;
+    var container = document.getElementById("qa-list");
+    
+    var html = '<div style="margin-bottom:1rem">';
+    html += '<button type="button" class="int-back-btn" style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.9rem">← Back to Topics</button>';
+    html += '<h2 style="margin:1rem 0;color:var(--gold)">' + esc(topicName) + ' - Questions</h2>';
+    html += '</div>';
+    html += '<div id="questions-list" class="questions-list"><p style="text-align:center;color:var(--muted);padding:2rem">Loading questions...</p></div>';
+    container.innerHTML = html;
+    
+    var questions = await loadInterviewQuestions(topicId);
+    if (!questions.length) {
+      document.getElementById("questions-list").innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem">No questions found</p>';
+      return;
+    }
+    
+    var qHtml = '<div class="qa-cards">';
+    questions.forEach(function(item) {
+      var q = item.question || "", a = item.answer || "", done = interviewExtra.done[item.id], bm = interviewExtra.bookmarks[item.id];
+      var strategy = item.strategy || "", example = item.example || "", mistakes = item.mistakes || [], followUps = item.followUps || [];
+      var d = done ? "var(--emerald)" : "var(--muted)";
+      var b = bm ? "var(--gold)" : "var(--muted)";
+      qHtml += '<div class="card qa-card" data-qid="' + esc(item.id) + '">';
+      qHtml += '<div class="qa-card-header" style="display:flex;justify-content:space-between;align-items:flex-start">';
+      qHtml += '<h3 style="margin:0;font-size:1rem;flex:1;padding-right:8px">' + esc(q) + '</h3>';
+      qHtml += '<div style="display:flex;gap:8px;flex-shrink:0">';
+      qHtml += '<span class="int-bookmark" data-qid="' + esc(item.id) + '" style="font-size:1.2rem;cursor:pointer;color:' + b + '">' + (bm ? "★" : "☆") + '</span>';
+      qHtml += '<span class="int-done" data-qid="' + esc(item.id) + '" style="font-size:1.2rem;cursor:pointer;color:' + d + '">' + (done ? "✓" : "○") + '</span>';
+      qHtml += '<span style="color:var(--muted);font-size:.8rem">▼</span>';
+      qHtml += '</div></div>';
+      qHtml += '<div class="q-details" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">';
+      qHtml += '<div style="margin-bottom:1rem"><h4 style="color:var(--gold);font-size:.85rem;margin-bottom:.5rem">Answer</h4><p style="color:var(--muted);font-size:.9rem;line-height:1.6">' + esc(a) + '</p></div>';
+      if (strategy) qHtml += '<div style="margin-bottom:1rem"><h4 style="color:var(--emerald);font-size:.85rem;margin-bottom:.5rem">Strategy</h4><p style="color:var(--muted);font-size:.9rem;line-height:1.6">' + esc(strategy) + '</p></div>';
+      if (example) qHtml += '<div style="margin-bottom:1rem"><h4 style="color:var(--cyan);font-size:.85rem;margin-bottom:.5rem">Example</h4><pre style="background:rgba(0,0,0,.3);padding:.75rem;border-radius:8px;overflow-x:auto;font-size:.8rem;color:var(--text)"><code>' + esc(example) + '</code></pre></div>';
+      if (mistakes.length) qHtml += '<div><h4 style="color:#f87171;font-size:.85rem;margin-bottom:.5rem">Common mistakes</h4><ul style="color:var(--muted);font-size:.85rem;padding-left:1.25rem;line-height:1.6">' + mistakes.map(function(m) { return '<li>' + esc(m) + '</li>'; }).join('') + '</ul></div>';
+      if (followUps.length) qHtml += '<div><h4 style="color:var(--violet);font-size:.85rem;margin-bottom:.5rem">Follow-up questions</h4><ul style="color:var(--muted);font-size:.85rem;padding-left:1.25rem;line-height:1.6">' + followUps.map(function(f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul></div>';
+      qHtml += '</div></div>';
     });
-    document.getElementById("qa-list").innerHTML = list
-      .map(function (item, idx) {
-        var done = interviewExtra.done[item.id];
-        var bm = interviewExtra.bookmarks[item.id];
-        return (
-          '<div class="qa-item" data-qid="' +
-          esc(item.id) +
-          '"><div class="qa-q" data-toggle="' +
-          esc(item.id) +
-          '"><span class="qa-title">' +
-          esc(item.question) +
-          '</span><div class="qa-tools"><button type="button" class="icon-btn" data-bookmark="' +
-          esc(item.id) +
-          '" title="Bookmark">' +
-          (bm ? "★" : "☆") +
-          '</button><button type="button" class="icon-btn" data-done="' +
-          esc(item.id) +
-          '" title="Mark done">' +
-          (done ? "✓" : "○") +
-          '</button><span class="cat-badge" style="background:rgba(30,64,175,.15);color:#93c5fd">' +
-          esc(item.technologyLabel || item.technology) +
-          "</span></div></div>" +
-          '<div class="qa-a" id="qa-' +
-          esc(item.id) +
-          '"><div class="qa-block"><h4>Answer</h4><p>' +
-          esc(item.answer) +
-          '</p></div><div class="qa-block"><h4>Strategy</h4><p>' +
-          esc(item.strategy) +
-          '</p></div><div class="qa-block"><h4>Example</h4><pre><code>' +
-          esc(item.example || "") +
-          '</code></pre></div><div class="qa-block"><h4>Common mistakes</h4><ul>' +
-          (item.mistakes || [])
-            .map(function (m) {
-              return "<li>" + esc(m) + "</li>";
-            })
-            .join("") +
-          '</ul></div><div class="qa-block"><h4>Follow-ups</h4><ul>' +
-          (item.followUps || [])
-            .map(function (m) {
-              return "<li>" + esc(m) + "</li>";
-            })
-            .join("") +
-          "</ul></div></div></div>"
-        );
-      })
-      .join("");
-    document.querySelectorAll(".qa-q[data-toggle]").forEach(function (row) {
-      row.addEventListener("click", function (e) {
-        if (e.target.closest("[data-bookmark]") || e.target.closest("[data-done]")) return;
-        var id = row.getAttribute("data-toggle");
-        document.getElementById("qa-" + id).classList.toggle("open");
+    qHtml += '</div>';
+    document.getElementById("questions-list").innerHTML = qHtml;
+
+    // Attach event listeners
+    var qlist = document.getElementById("questions-list");
+    qlist.querySelectorAll(".qa-card").forEach(function(card) {
+      card.addEventListener("click", function(e) {
+        if (e.target.closest(".int-bookmark") || e.target.closest(".int-done")) return;
+        card.querySelector(".q-details").classList.toggle("open");
+        card.querySelector(".q-details").style.display = card.querySelector(".q-details").style.display === "none" ? "block" : "none";
       });
     });
-    document.querySelectorAll("[data-done]").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
+    qlist.querySelectorAll(".int-done").forEach(function(el) {
+      el.addEventListener("click", function(e) {
         e.stopPropagation();
-        var id = btn.getAttribute("data-done");
-        var now = !interviewExtra.done[id];
-        interviewExtra.done[id] = now;
+        var qid = el.getAttribute("data-qid");
+        var now = !interviewExtra.done[qid];
+        interviewExtra.done[qid] = now;
         if (now) state.xp = (state.xp || 0) + C.XP_PER_INTERVIEW;
         else state.xp = Math.max(0, (state.xp || 0) - C.XP_PER_INTERVIEW);
         checkAchievements();
         persist();
-        renderInterviews();
+        showInterviewQuestions(currentTopicId, currentTopicName);
         renderDashboard();
       });
     });
-    document.querySelectorAll("[data-bookmark]").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
+    qlist.querySelectorAll(".int-bookmark").forEach(function(el) {
+      el.addEventListener("click", function(e) {
         e.stopPropagation();
-        var id = btn.getAttribute("data-bookmark");
-        interviewExtra.bookmarks[id] = !interviewExtra.bookmarks[id];
+        var qid = el.getAttribute("data-qid");
+        interviewExtra.bookmarks[qid] = !interviewExtra.bookmarks[qid];
         persist();
-        renderInterviews();
+        showInterviewQuestions(currentTopicId, currentTopicName);
       });
     });
-    if (window.hljs) {
-      document.querySelectorAll("#qa-list pre code").forEach(function (block) {
-        hljs.highlightElement(block);
+    document.querySelector(".int-back-btn").addEventListener("click", function() { showInterviewTopics(); });
+  }
+
+  async function renderInterviews() {
+    var container = document.getElementById("qa-list");
+    if (currentInterviewTopic) return;
+    
+    if (!interviewTopicsLoaded) {
+      container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem">Loading topics...</p>';
+      var topics = await loadInterviewTopics();
+      if (!topics.length) { container.innerHTML = '<p style="text-align:center;color:var(--muted);padding:2rem">No topics available</p>'; return; }
+      
+      var html = "";
+      topics.forEach(function(topic) {
+        var topicQuestions = bank.filter(function(b) { return b.technology === topic.id; });
+        var totalQ = topicQuestions.length;
+        var doneQ = topicQuestions.filter(function(q) { return interviewExtra.done[q.id]; }).length;
+        html += '<div class="card" data-topic="' + esc(topic.id) + '" data-name="' + esc(topic.name) + '">';
+        html += '<div class="card-icon" style="background:rgba(212,175,55,.15)">' + getTopicEmoji(topic.id) + '</div>';
+        html += '<h3>' + esc(topic.name) + '</h3>';
+        html += '<div style="display:flex;gap:12px;margin-top:6px;font-size:.72rem">';
+        html += '<span style="color:var(--muted)">📝 ' + totalQ + ' questions</span>';
+        html += '<span style="color:' + (doneQ > 0 ? 'var(--emerald)' : 'var(--muted)') + '">✅ ' + doneQ + ' done</span>';
+        html += '</div>';
+        if (totalQ > 0) {
+          var pct = Math.round((doneQ / totalQ) * 100);
+          html += '<div style="margin-top:8px;height:4px;background:rgba(100,116,139,0.2);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--gold),var(--emerald));border-radius:4px;transition:width .4s"></div></div>';
+        }
+        html += '<p style="margin-top:4px;font-size:.65rem;color:var(--muted)">Click to view questions</p>';
+        html += '</div>';
+      });
+      container.innerHTML = '<div class="cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1.25rem">' + html + '</div>';
+      interviewTopicsLoaded = true;
+      
+      document.querySelectorAll(".card[data-topic]").forEach(function(card) {
+        card.addEventListener("click", function() {
+          showInterviewQuestions(card.getAttribute("data-topic"), card.getAttribute("data-name"));
+        });
       });
     }
   }
 
   function initInterviewFilters() {
-    var techSel = document.getElementById("int-tech");
-    var keys = {};
-    bank.forEach(function (b) {
-      keys[b.technology] = b.technologyLabel || b.technology;
-    });
-    techSel.innerHTML =
-      '<option value="all">All technologies</option>' +
-      Object.keys(keys)
-        .map(function (k) {
-          return '<option value="' + esc(k) + '">' + esc(keys[k]) + "</option>";
-        })
-        .join("");
-    techSel.addEventListener("change", renderInterviews);
-    var df = document.getElementById("int-diff");
-    df.innerHTML =
-      '<option value="all">All difficulties</option><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="system-design">System design</option><option value="debugging">Debugging</option>';
-    df.addEventListener("change", renderInterviews);
-    document.getElementById("int-search").addEventListener("input", debounce(renderInterviews, 180));
-    document.getElementById("int-expand").addEventListener("click", function () {
-      document.querySelectorAll("#qa-list .qa-a").forEach(function (a) {
-        return a.classList.add("open");
-      });
-    });
-    document.getElementById("int-collapse").addEventListener("click", function () {
-      document.querySelectorAll("#qa-list .qa-a").forEach(function (a) {
-        return a.classList.remove("open");
-      });
-    });
+    // Hide toolbar elements
+    var toolbar = document.querySelector("#page-interview .toolbar");
+    if (toolbar) toolbar.style.display = "none";
+    var sectionSub = document.querySelector("#page-interview .section-sub");
+    if (sectionSub) sectionSub.style.display = "none";
   }
 
   function debounce(fn, ms) {
@@ -1562,7 +1857,7 @@
       if (xhr.status !== 200) { toast("GitHub user not found"); return; }
       try {
         var data = JSON.parse(xhr.responseText);
-        var pending = 4;
+        var pending = 5;
         var langOwner = data.login;
         function done() { pending--; if (pending === 0) { saveJSON("tm-github-data", data); toast("GitHub profile loaded!"); document.getElementById("career-panel-github").innerHTML = ""; renderGitHubPanel(); } }
         var reposReq = new XMLHttpRequest();
@@ -1606,10 +1901,84 @@
           try { data.events = JSON.parse(evtReq.responseText); } catch (e) { data.events = []; }
           var pushTotal = 0; (data.events || []).forEach(function (e) { if (e.type === "PushEvent") pushTotal += (e.payload && e.payload.size) || 0; });
           data.totalCommits = pushTotal;
+          
+          // Build contribution data (52 weeks)
+          data.contributionData = [];
+          var now = new Date();
+          var weekMap = {};
+          for (var w = 51; w >= 0; w--) {
+            var d = new Date(now.getTime() - w * 7 * 86400000);
+            var wd = d.toISOString().split("T")[0];
+            weekMap[wd] = { date: wd, count: 0 };
+          }
+          (data.events || []).forEach(function(e) {
+            var cd = e.created_at.split("T")[0];
+            if (weekMap[cd]) weekMap[cd].count++;
+          });
+          Object.keys(weekMap).sort().forEach(function(k) { data.contributionData.push(weekMap[k]); });
+          
+          // Build weekly activity
+          data.weeklyActivity = [];
+          var weekActivityMap = {};
+          (data.events || []).forEach(function(e) {
+            var ed = new Date(e.created_at);
+            var wn = "W" + Math.ceil((ed.getTime() - new Date(now.getTime() - 90 * 86400000).getTime()) / (7 * 86400000));
+            if (!weekActivityMap[wn]) weekActivityMap[wn] = { week: wn, pushes: 0, prs: 0, creates: 0 };
+            if (e.type === "PushEvent") weekActivityMap[wn].pushes++;
+            else if (e.type === "PullRequestEvent") weekActivityMap[wn].prs++;
+            else if (e.type === "CreateEvent") weekActivityMap[wn].creates++;
+          });
+          Object.keys(weekActivityMap).slice(-12).forEach(function(k) { data.weeklyActivity.push(weekActivityMap[k]); });
+          
           done();
         };
         evtReq.onerror = function () { data.events = []; done(); };
         evtReq.send();
+        
+        // Fetch real contribution data for streaks from GitHub's public API
+        var contribReq = new XMLHttpRequest();
+        contribReq.open("GET", "https://github-contributions-api.jogruber.de/v4/" + encodeURIComponent(username));
+        contribReq.onload = function() {
+          try {
+            var contribJson = JSON.parse(contribReq.responseText);
+            if (contribJson && contribJson.length) {
+              data.contributionData = contribJson.map(function(d) { return { date: d.date, count: d.count }; });
+              // Calculate real streaks
+              var activeDays = contribJson.filter(function(d) { return d.count > 0; });
+              data.totalActiveDays = activeDays.length;
+              var sortedDates = activeDays.map(function(d) { return d.date; }).sort();
+              var currentStreak = 0, longestStreak = 0, tempStreak = 0, prevDate = null;
+              var today = new Date().toISOString().split("T")[0];
+              sortedDates.forEach(function(date, idx) {
+                if (prevDate) {
+                  var diff = (new Date(date) - new Date(prevDate)) / 86400000;
+                  if (diff === 1) { tempStreak++; }
+                  else { tempStreak = 1; }
+                } else { tempStreak = 1; }
+                if (tempStreak > longestStreak) longestStreak = tempStreak;
+                prevDate = date;
+              });
+              var hasToday = sortedDates.includes(today);
+              var yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+              var hasYesterday = sortedDates.includes(yesterday);
+              data.currentStreak = (hasToday || hasYesterday) ? tempStreak : 0;
+              data.longestStreak = longestStreak;
+              // Calculate weekly consistency
+              var weekSet = {};
+              contribJson.forEach(function(d) {
+                if (d.count > 0) {
+                  var wn = d.date.substring(0, 7);
+                  weekSet[wn] = true;
+                }
+              });
+              data.weeklyConsistency = Math.round((Object.keys(weekSet).length / 52) * 100);
+            }
+          } catch(e) {}
+          done();
+        };
+        contribReq.onerror = function() { done(); };
+        contribReq.send();
+        
         var orgsReq = new XMLHttpRequest();
         orgsReq.open("GET", "https://api.github.com/users/" + encodeURIComponent(username) + "/orgs");
         orgsReq.onload = function () {
@@ -1653,6 +2022,302 @@
     xhr.onerror = function () { toast("Network error fetching GitHub"); };
     xhr.send();
   }
+
+  // Role-based roadmap
+  var ROLE_PROJ_MAP = {
+    frontend: ["frontend"],
+    backend: ["backend"],
+    fullstack: ["fullstack"],
+    devops: ["devops"],
+    devsecops: ["devops","security"],
+    dataanalyst: ["data-ai"],
+    aiengineer: ["ai"],
+    aidatascientist: ["ai","data-ai"],
+    dataengineer: ["data-ai","backend"],
+    android: ["frontend"],
+    machinelearning: ["ai"],
+    postgresql: ["backend","data-ai"],
+    ios: ["frontend"],
+    blockchain: ["blockchain"],
+    qa: ["backend","devops"],
+    softwarearchitect: ["fullstack","devops"],
+    apidesign: ["backend"],
+    cybersecurity: ["security"],
+    uxdesign: ["frontend"],
+    technicalwriter: ["frontend"],
+    gamedev: ["frontend"],
+    servergamedev: ["backend"],
+    mlops: ["ai","devops"],
+    productmanager: ["fullstack"],
+    engineeringmanager: ["fullstack"],
+    devrel: ["frontend"],
+    bianalyst: ["data-ai"],
+    airedteaming: ["ai","security"],
+    networkengineer: ["devops"]
+  };
+
+  var ROLES = {
+    frontend: { name: "Frontend Developer", icon: "🎨", desc: "Build beautiful, performant UIs with modern frameworks", color: "#3b82f6", topics: ["fe-html-css", "fe-js-ts", "fe-react", "fe-next-tailwind", "fe-tooling", "be-http", "do-docker", "sec-owasp"], salaryInr: "3-8 LPA", salaryUsd: "$50-110k" },
+    backend: { name: "Backend Developer", icon: "⚙️", desc: "Design scalable APIs, databases, and server-side systems", color: "#10b981", topics: ["be-node", "be-http", "be-data", "be-realtime", "be-search", "do-docker", "do-cicd", "sec-owasp", "fe-js-ts"], salaryInr: "4-10 LPA", salaryUsd: "$60-130k" },
+    fullstack: { name: "Full Stack Developer", icon: "🚀", desc: "Own the entire stack from UI to infrastructure", color: "var(--gold)", topics: ["fe-html-css", "fe-js-ts", "fe-react", "fe-next-tailwind", "be-node", "be-http", "be-data", "do-docker", "do-cicd", "ai-llm"], salaryInr: "4-12 LPA", salaryUsd: "$60-140k" },
+    devops: { name: "DevOps Engineer", icon: "☸️", desc: "Build deployment pipelines, manage infra at scale", color: "#8b5cf6", topics: ["do-linux", "do-docker", "do-k8s", "do-aws", "do-cicd", "do-observe", "sec-owasp", "sec-ops", "be-http"], salaryInr: "5-14 LPA", salaryUsd: "$70-150k" },
+    devsecops: { name: "DevSecOps Engineer", icon: "🔐", desc: "Embed security into CI/CD and infrastructure", color: "#ef4444", topics: ["do-linux", "do-docker", "do-k8s", "do-cicd", "do-observe", "sec-owasp", "sec-authz", "sec-ops", "be-realtime"], salaryInr: "6-16 LPA", salaryUsd: "$80-160k" },
+    dataanalyst: { name: "Data Analyst", icon: "📊", desc: "Analyze data, build dashboards, derive insights", color: "#06b6d4", topics: ["ai-py", "ai-ml", "be-data", "fe-html-css", "fe-js-ts"], salaryInr: "3-7 LPA", salaryUsd: "$50-100k" },
+    aiengineer: { name: "AI Engineer", icon: "🤖", desc: "Build and deploy AI-powered applications", color: "#f59e0b", topics: ["ai-py", "ai-ml", "ai-dl", "ai-llm", "ai-mlops", "be-http", "be-data", "do-docker"], salaryInr: "6-20 LPA", salaryUsd: "$80-180k" },
+    aidatascientist: { name: "AI & Data Scientist", icon: "🧠", desc: "Research, model, and productionize ML solutions", color: "#8b5cf6", topics: ["ai-py", "ai-ml", "ai-dl", "ai-llm", "ai-mlops", "be-data", "do-observe"], salaryInr: "6-22 LPA", salaryUsd: "$80-200k" },
+    dataengineer: { name: "Data Engineer", icon: "🗄️", desc: "Build data pipelines, warehouses, and ETL systems", color: "#3b82f6", topics: ["ai-py", "ai-ml", "be-data", "do-linux", "do-docker", "do-cicd", "do-observe"], salaryInr: "5-15 LPA", salaryUsd: "$70-150k" },
+    android: { name: "Android Developer", icon: "📱", desc: "Build native Android apps with Kotlin/Jetpack", color: "#22c55e", topics: ["fe-js-ts", "fe-react", "be-http", "be-data", "be-realtime", "do-cicd"], salaryInr: "3-9 LPA", salaryUsd: "$50-120k" },
+    machinelearning: { name: "Machine Learning Engineer", icon: "🧬", desc: "Design, train, and deploy ML models", color: "#f59e0b", topics: ["ai-py", "ai-ml", "ai-dl", "ai-llm", "ai-mlops", "be-http", "do-docker", "do-observe"], salaryInr: "6-18 LPA", salaryUsd: "$80-170k" },
+    postgresql: { name: "PostgreSQL DBA", icon: "🐘", desc: "Manage, tune, and scale PostgreSQL databases", color: "#336791", topics: ["be-data", "be-search", "do-linux", "do-observe", "sec-owasp"], salaryInr: "4-12 LPA", salaryUsd: "$60-130k" },
+    ios: { name: "iOS Developer", icon: "🍎", desc: "Build native iOS apps with Swift/SwiftUI", color: "#64748b", topics: ["fe-js-ts", "fe-react", "be-http", "be-data", "be-realtime", "fe-tooling"], salaryInr: "4-10 LPA", salaryUsd: "$60-130k" },
+    blockchain: { name: "Blockchain Developer", icon: "⛓️", desc: "Build smart contracts and decentralized apps", color: "#f59e0b", topics: ["fe-js-ts", "fe-react", "be-node", "be-http", "be-data", "sec-owasp", "sec-authz"], salaryInr: "5-18 LPA", salaryUsd: "$70-160k" },
+    qa: { name: "QA / Test Engineer", icon: "🧪", desc: "Ensure quality through automated testing", color: "#22c55e", topics: ["fe-tooling", "be-http", "do-cicd", "fe-js-ts", "be-node", "do-observe"], salaryInr: "3-7 LPA", salaryUsd: "$50-100k" },
+    softwarearchitect: { name: "Software Architect", icon: "🏗️", desc: "Design system architecture and technical strategy", color: "var(--gold)", topics: ["fe-js-ts", "be-http", "be-data", "be-realtime", "be-search", "do-k8s", "do-cicd", "sec-owasp", "ai-llm", "do-observe"], salaryInr: "15-40 LPA", salaryUsd: "$130-250k" },
+    apidesign: { name: "API Designer", icon: "🔌", desc: "Design clean, versioned, and developer-friendly APIs", color: "#3b82f6", topics: ["be-node", "be-http", "be-realtime", "be-data", "be-search", "sec-owasp", "fe-js-ts"], salaryInr: "4-12 LPA", salaryUsd: "$60-130k" },
+    cybersecurity: { name: "Cyber Security Engineer", icon: "🛡️", desc: "Protect systems, networks, and data from threats", color: "#ef4444", topics: ["sec-owasp", "sec-authz", "sec-ops", "do-linux", "do-k8s", "do-observe", "be-http", "be-realtime"], salaryInr: "5-16 LPA", salaryUsd: "$70-160k" },
+    uxdesign: { name: "UX Designer", icon: "🎯", desc: "Design intuitive, accessible, and delightful user experiences", color: "#ec4899", topics: ["fe-html-css", "fe-js-ts", "fe-react", "fe-tooling"], salaryInr: "3-8 LPA", salaryUsd: "$50-110k" },
+    technicalwriter: { name: "Technical Writer", icon: "✍️", desc: "Create clear documentation, guides, and API references", color: "#64748b", topics: ["fe-html-css", "fe-js-ts", "be-http", "fe-tooling", "do-cicd"], salaryInr: "3-7 LPA", salaryUsd: "$45-95k" },
+    gamedev: { name: "Game Developer", icon: "🎮", desc: "Build interactive games and game systems", color: "#8b5cf6", topics: ["fe-js-ts", "fe-react", "be-node", "be-http", "be-data", "ai-ml", "fe-tooling", "do-docker"], salaryInr: "3-10 LPA", salaryUsd: "$50-120k" },
+    servergamedev: { name: "Server-Side Game Developer", icon: "🖥️", desc: "Build scalable game backends and matchmaking", color: "#10b981", topics: ["be-node", "be-http", "be-data", "be-realtime", "be-search", "do-docker", "do-k8s", "do-observe"], salaryInr: "4-12 LPA", salaryUsd: "$60-130k" },
+    mlops: { name: "MLOps Engineer", icon: "🔄", desc: "Operationalize ML models with CI/CD and monitoring", color: "#f59e0b", topics: ["ai-py", "ai-ml", "ai-dl", "ai-llm", "ai-mlops", "do-docker", "do-k8s", "do-cicd", "do-observe"], salaryInr: "7-22 LPA", salaryUsd: "$90-190k" },
+    productmanager: { name: "Product Manager", icon: "📋", desc: "Define product strategy, roadmap, and delivery", color: "#ec4899", topics: ["fe-js-ts", "be-http", "fe-react", "do-cicd", "ai-llm"], salaryInr: "8-25 LPA", salaryUsd: "$80-180k" },
+    engineeringmanager: { name: "Engineering Manager", icon: "👥", desc: "Lead engineering teams and technical delivery", color: "var(--gold)", topics: ["fe-js-ts", "be-http", "be-data", "do-cicd", "do-observe", "sec-owasp", "ai-llm"], salaryInr: "15-40 LPA", salaryUsd: "$120-250k" },
+    devrel: { name: "Developer Relations", icon: "🤝", desc: "Build community, create content, and drive adoption", color: "#3b82f6", topics: ["fe-html-css", "fe-js-ts", "fe-react", "be-http", "do-cicd", "ai-llm", "fe-tooling"], salaryInr: "5-14 LPA", salaryUsd: "$70-140k" },
+    bianalyst: { name: "BI Analyst", icon: "📈", desc: "Create reports, dashboards, and business intelligence", color: "#06b6d4", topics: ["ai-py", "ai-ml", "be-data", "fe-html-css", "do-observe"], salaryInr: "3-8 LPA", salaryUsd: "$50-105k" },
+    airedteaming: { name: "AI Red Teaming", icon: "⚔️", desc: "Stress-test AI systems for safety and robustness", color: "#ef4444", topics: ["ai-py", "ai-ml", "ai-dl", "ai-llm", "sec-owasp", "sec-ops", "sec-authz"], salaryInr: "8-25 LPA", salaryUsd: "$100-200k" },
+    networkengineer: { name: "Network Engineer", icon: "🌐", desc: "Design, configure, and maintain network infrastructure", color: "#8b5cf6", topics: ["do-linux", "do-k8s", "do-aws", "do-observe", "sec-owasp", "sec-ops"], salaryInr: "4-10 LPA", salaryUsd: "$55-120k" }
+  };
+
+  function renderRoleRoadmap() {
+    var container = document.getElementById("roadmap-role");
+    var phases = (window.TM_ROADMAP && window.TM_ROADMAP.phases) || [];
+    var allTopics = {};
+    phases.forEach(function(ph) { (ph.topics || []).forEach(function(t) { allTopics[t.id] = t; }); });
+
+    var html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,350px),1fr));gap:1rem">';
+    Object.keys(ROLES).forEach(function(key) {
+      var role = ROLES[key];
+      var roleTopics = role.topics.map(function(id) { return allTopics[id]; }).filter(function(t) { return t; });
+      var doneCount = roleTopics.filter(function(t) {
+        return (t.subtopics || []).every(function(s, si) { return roadmapProg["rm-" + t.id + "-s-" + si]; });
+      }).length;
+
+      html += '<div class="card role-card" data-role="' + key + '" style="border:1px solid ' + role.color + '40;cursor:pointer">';
+      html += '<div class="role-card-head" style="display:flex;align-items:center;gap:10px">';
+      html += '<span style="font-size:1.5rem">' + role.icon + '</span>';
+      html += '<div style="flex:1"><h3 style="margin:0;font-size:.95rem;color:' + role.color + '">' + role.name + '</h3>';
+      html += '<span style="font-size:.7rem;color:var(--muted)">' + role.desc + '</span></div>';
+      html += '<svg class="chevron chevron-mini role-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>';
+      html += '</div>';
+      html += '<div class="role-salary" style="margin:6px 0 0 0;display:flex;gap:12px;flex-wrap:wrap">';
+      html += '<span style="font-size:.7rem;background:rgba(255,255,255,.05);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08)">🇮🇳 Fresher: ' + role.salaryInr + '</span>';
+      html += '<span style="font-size:.7rem;background:rgba(255,255,255,.05);padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08)">🌍 Fresher: ' + role.salaryUsd + '</span>';
+      html += '</div>';
+      // Progress bar + module count shown directly on card
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 0">';
+      html += '<span style="font-size:.68rem;color:var(--gold)">📚 ' + doneCount + '/' + roleTopics.length + ' modules</span>';
+      html += '<span style="font-size:.68rem;color:var(--muted)">⏱ ' + roleTopics.reduce(function(s,t){var h=parseInt(t.hours)||0;return s+h;},0) + 'h</span>';
+      html += '</div>';
+      html += '<div style="height:3px;background:rgba(100,116,139,0.2);border-radius:3px;overflow:hidden;margin-top:4px"><div style="height:100%;width:' + (roleTopics.length ? Math.round((doneCount/roleTopics.length)*100) : 0) + '%;background:' + role.color + ';transition:width.4s ease"></div></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    container.innerHTML = html;
+  }
+
+  function renderRoleDetail(key) {
+    var phases = (window.TM_ROADMAP && window.TM_ROADMAP.phases) || [];
+    var allTopics = {};
+    phases.forEach(function(ph) { (ph.topics || []).forEach(function(t) { allTopics[t.id] = t; }); });
+    var topicPhase = {};
+    phases.forEach(function(ph) { (ph.topics || []).forEach(function(t) { topicPhase[t.id] = ph; }); });
+    var difColors = { Beginner: "#22c55e", Intermediate: "#3b82f6", Advanced: "#f59e0b", Expert: "#ef4444" };
+
+    var role = ROLES[key];
+    if (!role) return;
+    var roleTopics = role.topics.map(function(id) { return allTopics[id]; }).filter(function(t) { return t; });
+    var doneCount = roleTopics.filter(function(t) {
+      return (t.subtopics || []).every(function(s, si) { return roadmapProg["rm-" + t.id + "-s-" + si]; });
+    }).length;
+
+    var html = '';
+    // Back button header
+    html += '<div class="rd-back-bar" style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(212,175,55,0.15);position:sticky;top:0;background:rgba(2,6,23,0.98);backdrop-filter:blur(12px);z-index:10">';
+    html += '<button type="button" class="btn-ghost" id="rd-back-btn" style="display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:.8rem">← Back to Roles</button>';
+    html += '<div style="flex:1;text-align:center;font-size:.85rem;font-weight:600;color:' + role.color + '">' + role.icon + ' ' + role.name + '</div>';
+    html += '<button type="button" class="btn-ghost modal-close rd-close-x" style="font-size:1.3rem;padding:4px 12px">×</button>';
+    html += '</div>';
+
+    // Content — modal itself scrolls (overflow:auto on .modal-role-detail)
+    html += '<div style="padding:20px 24px">';
+
+    // Role header
+    html += '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;margin-top:8px">';
+    html += '<span style="font-size:2.5rem">' + role.icon + '</span>';
+    html += '<div><h2 style="margin:0;font-size:1.3rem;color:' + role.color + '">' + role.name + '</h2>';
+    html += '<p style="margin:4px 0 0;font-size:.82rem;color:var(--muted)">' + role.desc + '</p></div></div>';
+
+    // Salary badges + progress
+    html += '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px">';
+    html += '<span style="font-size:.75rem;background:rgba(255,255,255,.05);padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08)">🇮🇳 Fresher: ' + role.salaryInr + '</span>';
+    html += '<span style="font-size:.75rem;background:rgba(255,255,255,.05);padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.08)">🌍 Fresher: ' + role.salaryUsd + '</span>';
+    html += '</div>';
+
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 4px">';
+    html += '<span style="font-size:.75rem;color:var(--gold)">📚 ' + doneCount + '/' + roleTopics.length + ' modules completed</span>';
+    html += '<span style="font-size:.75rem;color:var(--muted)">⏱ ' + roleTopics.reduce(function(s,t){var h=parseInt(t.hours)||0;return s+h;},0) + 'h total</span>';
+    html += '</div>';
+    html += '<div style="height:5px;background:rgba(100,116,139,0.2);border-radius:5px;overflow:hidden;margin-bottom:20px"><div style="height:100%;width:' + (roleTopics.length ? Math.round((doneCount/roleTopics.length)*100) : 0) + '%;background:' + role.color + ';border-radius:5px;transition:width.4s ease"></div></div>';
+
+    // Modules accordion
+    html += '<div class="role-modules">';
+    roleTopics.forEach(function(t) {
+      var ph = topicPhase[t.id];
+      var subsTotal = (t.subtopics || []).length;
+      var subsDone = (t.subtopics || []).filter(function(s, si) { return roadmapProg["rm-" + t.id + "-s-" + si]; }).length;
+      var prTotal = (t.practice || []).length;
+      var prDone = (t.practice || []).filter(function(s, si) { return roadmapProg["rm-" + t.id + "-p-" + si]; }).length;
+      var allSubsDone = subsTotal > 0 && subsDone === subsTotal;
+      var allPracticeDone = prTotal > 0 && prDone === prTotal;
+      var subPct = subsTotal ? Math.round((subsDone/subsTotal)*100) : 0;
+      var difCol = difColors[t.difficulty] || "var(--muted)";
+
+      var subs = (t.subtopics || []).map(function(s, si) {
+        var k = "rm-" + t.id + "-s-" + si;
+        return '<label class="subtopic-row"><input type="checkbox" data-rm="' + k + '"' + (roadmapProg[k] ? " checked" : "") + ' /><span>' + esc(s) + '</span></label>';
+      }).join("");
+      var pr = (t.practice || []).map(function(s, si) {
+        var k = "rm-" + t.id + "-p-" + si;
+        return '<label class="subtopic-row practice-row"><input type="checkbox" data-rm="' + k + '"' + (roadmapProg[k] ? " checked" : "") + ' /><span>' + esc(s) + '</span></label>';
+      }).join("");
+      var pj = (t.projects || []).map(function(s) { return "<li>" + esc(s) + "</li>"; }).join("");
+      var deps = (t.deps || []).length ? t.deps.map(function(d) {
+        var dt = allTopics[d];
+        return '<span style="font-size:.65rem;padding:3px 8px;border-radius:6px;background:rgba(212,175,55,.1);color:var(--gold);border:1px solid rgba(212,175,55,.2)">' + (dt ? esc(dt.title) : esc(d)) + '</span>';
+      }).join(" ") : "";
+
+      html += '<div class="roadmap-topic role-topic" data-topic-id="' + esc(t.id) + '">';
+      html += '<div class="roadmap-topic-head role-topic-head">';
+      html += '<div style="flex:1">';
+      html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+      html += '<span class="roadmap-topic-title" style="font-size:.82rem">' + esc(t.title) + '</span>';
+      html += '<span style="font-size:.62rem;padding:2px 8px;border-radius:20px;background:' + difCol + '20;color:' + difCol + ';border:1px solid ' + difCol + '40;font-weight:600">' + esc(t.difficulty || "") + '</span>';
+      if (allSubsDone && allPracticeDone) { html += '<span style="font-size:.65rem">✅</span>'; }
+      html += '</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap">';
+      html += '<span style="font-size:.68rem;color:var(--muted)">⏱ ' + esc(t.hours || "") + '</span>';
+      if (ph) { html += '<span style="font-size:.68rem;color:var(--muted)">📂 Phase ' + ph.n + ': ' + esc(ph.title) + '</span>'; }
+      if (subsTotal) { html += '<span style="font-size:.68rem;color:var(--muted)">📖 ' + subsDone + '/' + subsTotal + '</span>'; }
+      html += '</div></div>';
+      html += '<svg class="chevron chevron-mini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+      html += '</div>';
+      if (subsTotal) {
+        html += '<div style="height:2px;margin:0 1rem;background:rgba(100,116,139,0.15);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + subPct + '%;background:' + (subPct === 100 ? "var(--emerald, #22c55e)" : difCol) + ';border-radius:2px"></div></div>';
+      }
+      html += '<div class="roadmap-topic-body role-topic-body">';
+      if (deps) { html += '<div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px;align-items:center"><span style="font-size:.68rem;color:var(--muted);margin-right:4px">🔗 Prerequisites:</span>' + deps + '</div>'; }
+      if (subs) {
+        html += '<div class="roadmap-section-label" style="display:flex;align-items:center;gap:6px"><span>📖 Subtopics</span>' + (subsTotal ? '<span style="font-size:.62rem;font-weight:400;color:var(--muted)">(' + subsDone + '/' + subsTotal + ')</span>' : '') + '</div>' + subs;
+      }
+      if (pr) {
+        html += '<div class="roadmap-section-label" style="display:flex;align-items:center;gap:6px;margin-top:10px"><span>⚡ Practice tasks</span>' + (prTotal ? '<span style="font-size:.62rem;font-weight:400;color:var(--muted)">(' + prDone + '/' + prTotal + ')</span>' : '') + '</div>' + pr;
+      }
+      if (pj) {
+        html += '<div class="roadmap-section-label" style="display:flex;align-items:center;gap:6px;margin-top:10px"><span>🚀 Project ideas</span></div><ul class="proj-list">' + pj + "</ul>";
+      }
+      html += '</div></div>';
+    });
+    html += '</div>';
+
+    // Portfolio projects
+    var projCats = ROLE_PROJ_MAP[key] || [key];
+    var roleProjects = (window.TMProjects && window.TMProjects.all || []).filter(function(p) { return projCats.indexOf(p.cat) >= 0; }).slice(0, 6);
+    if (roleProjects.length) {
+      html += '<div style="margin-top:20px;border-top:1px solid rgba(212,175,55,0.12);padding-top:14px">';
+      html += '<div class="roadmap-section-label" style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span>🏆 Portfolio Projects</span><span style="font-size:.65rem;font-weight:400;color:var(--muted)">(' + roleProjects.length + ' ready)</span></div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:8px">';
+      roleProjects.forEach(function(rp) {
+        html += '<div class="role-portfolio-proj" data-proj-id="' + esc(rp.id) + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);cursor:pointer;transition:all .2s">';
+        html += '<span style="font-size:1.3rem">' + esc(rp.emoji) + '</span>';
+        html += '<div style="flex:1;min-width:0">';
+        html += '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">';
+        html += '<span style="font-size:.78rem;font-weight:500;color:var(--text)">' + esc(rp.title) + '</span>';
+        html += '<span style="font-size:.6rem;padding:1px 6px;border-radius:4px;background:' + rp.color + '22;color:' + rp.color + '">' + esc(rp.tier) + '</span>';
+        html += '</div>';
+        html += '<div style="font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">' + esc(rp.desc) + '</div>';
+        html += '</div>';
+        html += '<span style="font-size:.6rem;color:var(--muted);flex-shrink:0">⏱ ' + esc(rp.time) + '</span>';
+        html += '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    html += '</div>'; // close content wrapper
+
+    var overlay = document.getElementById("modal-role-detail");
+    document.getElementById("rd-content").innerHTML = html;
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+
+    // Close handlers use delegation on #modal-role-detail instead of per-render listeners
+  }
+
+  // Shared handler for role interactions (cards + overlay)
+  function handleRoleInteraction(e) {
+    var projEl = e.target.closest(".role-portfolio-proj");
+    if (projEl) {
+      var pid = projEl.getAttribute("data-proj-id");
+      if (pid && typeof openProjectModal === "function") { openProjectModal(pid); }
+      return;
+    }
+    var cb = e.target.closest("[data-rm]");
+    if (cb) {
+      roadmapProg[cb.getAttribute("data-rm")] = cb.checked;
+      saveJSON(SK.roadmapTopics, roadmapProg);
+      syncToSupabase();
+      return;
+    }
+    var head = e.target.closest(".role-topic-head");
+    if (head) {
+      e.stopPropagation();
+      var topic = head.closest(".role-topic");
+      if (!topic) return;
+      var body = topic.querySelector(".role-topic-body");
+      var chev = head.querySelector(".chevron");
+      if (body) { body.classList.toggle("open"); if (chev) chev.classList.toggle("open"); }
+      return;
+    }
+    var card = e.target.closest(".role-card");
+    if (card) {
+      var roleKey = card.getAttribute("data-role");
+      if (roleKey) renderRoleDetail(roleKey);
+    }
+  }
+  if (document.getElementById("roadmap-role")) {
+    document.getElementById("roadmap-role").addEventListener("click", handleRoleInteraction);
+    document.getElementById("modal-role-detail").addEventListener("click", function(e) {
+      if (e.target.closest("#rd-back-btn") || e.target.closest(".rd-close-x") || e.target === this) {
+        this.classList.remove("open");
+        this.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+        return;
+      }
+      handleRoleInteraction(e);
+    });
+  }
+
+  // Toggle roadmap views
+  document.addEventListener("click", function(e) {
+    var btn = e.target.closest(".roadmap-view-btn");
+    if (!btn) return;
+    document.querySelectorAll(".roadmap-view-btn").forEach(function(b) { b.className = b.className.replace(" btn-primary", " btn-ghost").replace(" active", ""); });
+    btn.className = "btn-primary roadmap-view-btn active";
+    var view = btn.getAttribute("data-view");
+    document.getElementById("roadmap-timeline").style.display = view === "timeline" ? "" : "none";
+    document.getElementById("roadmap-role").style.display = view === "role" ? "" : "none";
+    if (view === "role") renderRoleRoadmap();
+  });
 
   function renderGitHubPanel() {
     var ghKey = "tm-github-data";
@@ -1755,6 +2420,171 @@
         html += '</div><div style="display:flex;justify-content:space-between;font-size:.6rem;color:var(--muted);margin-top:4px"><span>26 weeks ago</span><span>This week</span></div></div>';
       }
 
+      // Contribution graph (52 weeks like GitHub) - external API is primary
+      var contribData = ghData.contributionData;
+      if (contribData && contribData.length) {
+        var currentStreak = ghData.currentStreak || 0;
+        var longestStreak = ghData.longestStreak || 0;
+        var totalActive = ghData.totalActiveDays || contribData.filter(function(w){return w.count>0;}).length;
+        var weeklyConsistency = ghData.weeklyConsistency || (function(){
+          var ws={};contribData.forEach(function(w){if(w.count>0){var m=w.date.substring(0,7);ws[m]=true;}});return Math.round((Object.keys(ws).length/Math.max(1,Object.keys(ws).length))*100);
+        })();
+        
+        // Convert flat daily data to weeks (properly aligned)
+        var daysOfWeek = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+        var sortedDays = contribData.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+        if (!sortedDays.length) sortedDays = contribData;
+        var firstDate = new Date(sortedDays[0].date);
+        var padStart = firstDate.getDay();
+        var padded = [];
+        for (var p=0; p<padStart; p++) padded.push({date:"",count:-1});
+        padded = padded.concat(sortedDays);
+        var weeks = [];
+        for (var i=0; i<padded.length; i+=7) weeks.push(padded.slice(i,i+7));
+        while (weeks.length>0 && weeks[weeks.length-1].length<7) weeks[weeks.length-1].push({date:"",count:-1});
+        weeks = weeks.slice(-53);
+        
+        var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        var dayLabels=["","Mon","","Wed","","Fri",""];
+        var monthPositions={};
+        weeks.forEach(function(w,wi){
+          if(w[3]&&w[3].date){var m=new Date(w[3].date).getMonth();if(monthPositions[m]===undefined)monthPositions[m]=wi;}
+        });
+        
+        // Premium streak panel with glassmorphism - redesigned with better visuals
+        html += '<div class="panel streak-panel" style="margin-top:1rem;background:linear-gradient(145deg,rgba(12,20,38,0.95),rgba(20,35,60,0.85));border:1px solid rgba(212,175,55,0.25);border-radius:24px;padding:1.75rem;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.5),inset 0 1px 0 rgba(212,175,55,0.12)">';
+        // Animated gradient orbs
+        html += '<div style="position:absolute;top:-80px;right:-80px;width:240px;height:240px;background:radial-gradient(circle,rgba(212,175,55,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;animation:float 8s ease-in-out infinite"></div>';
+        html += '<div style="position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(56,152,236,0.08) 0%,transparent 70%);border-radius:50%;pointer-events:none;animation:float 12s ease-in-out infinite reverse"></div>';
+        html += '<div class="streak-grid-bg"></div>';
+        html += '<div style="position:relative;z-index:2">';
+        
+        // Header with decorative line
+        html += '<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:1.5rem">';
+        html += '<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,0.3))"></div>';
+        html += '<div style="display:flex;align-items:center;gap:8px"><span style="font-size:1.1rem">&#x1F525;</span><span style="font-size:.9rem;font-weight:600;color:var(--gold);letter-spacing:2px;text-transform:uppercase">Contribution Graph</span></div>';
+        html += '<div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(212,175,55,0.3),transparent)"></div>';
+        html += '</div>';
+        
+        // Stats cards with better design
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:10px;margin-bottom:1.25rem">';
+        var statCards = [
+          {val:currentStreak,lab:"Current Streak",col:"var(--gold)",bg:"rgba(212,175,55,0.1)",bd:"rgba(212,175,55,0.25)",glow:true},
+          {val:longestStreak,lab:"Longest Streak",col:"var(--emerald)",bg:"rgba(16,185,129,0.08)",bd:"rgba(16,185,129,0.2)",glow:false},
+          {val:totalActive,lab:"Active Days",col:"#3b82f6",bg:"rgba(59,130,246,0.08)",bd:"rgba(59,130,246,0.2)",glow:false},
+          {val:weeklyConsistency+"%",lab:"Consistency",col:"#8b5cf6",bg:"rgba(139,92,246,0.08)",bd:"rgba(139,92,246,0.2)",glow:false}
+        ];
+        statCards.forEach(function(c){
+          var extra=c.glow?'background:radial-gradient(circle at 50% 50%,rgba(212,175,55,0.15),transparent 100%);animation:pulse 2.5s ease-in-out infinite;':'';
+          html += '<div style="background:'+c.bg+';border:1px solid '+c.bd+';border-radius:16px;padding:14px 8px;text-align:center;position:relative;overflow:hidden;transition:all .3s;backdrop-filter:blur(4px)" onmouseover="this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+          if(c.glow)html+='<div style="position:absolute;top:-60%;left:-60%;width:220%;height:220%;'+extra+'"></div>';
+          html += '<div style="font-size:1.6rem;font-weight:700;color:'+c.col+';position:relative;z-index:1;text-shadow:'+(c.glow?'0 0 20px rgba(212,175,55,0.4)':'none')+'">'+c.val+'</div>';
+          html += '<div style="font-size:.6rem;color:var(--muted);position:relative;z-index:1;margin-top:4px;letter-spacing:.5px">'+c.lab+'</div></div>';
+        });
+        html += '</div>';
+        
+        // Heatmap with cleaner design
+        html += '<div style="display:flex;gap:6px;margin-top:.5rem;overflow-x:auto;padding:8px 0;justify-content:center">';
+        html += '<div style="display:flex;flex-direction:column;gap:2px;padding-top:2px">';
+        dayLabels.forEach(function(d){html+='<div style="font-size:.5rem;color:var(--muted);height:14px;line-height:14px;width:28px;text-align:right;padding-right:6px">'+d+'</div>';});
+        html += '</div>';
+        var gridHtml = '<div style="display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;gap:3px">';
+        var levels=["rgba(30,41,59,0.8)","rgba(212,175,55,0.15)","rgba(212,175,55,0.35)","rgba(212,175,55,0.55)","rgba(212,175,55,0.8)"];
+        var maxC=0;contribData.forEach(function(w){if(w.count>maxC)maxC=w.count;});
+        weeks.forEach(function(week){
+          week.forEach(function(w){
+            if(!w||!w.date||w.count<0){gridHtml+='<div style="width:14px;height:14px;border-radius:3px;background:rgba(30,41,59,0.4);border:1px solid rgba(100,116,139,0.08)"></div>';return;}
+            var lv=0;
+            if(w.count>0&&maxC>0){var r=w.count/maxC;if(r>0.75)lv=4;else if(r>0.5)lv=3;else if(r>0.25)lv=2;else lv=1;}
+            var dn=daysOfWeek[new Date(w.date).getDay()];
+            var glow=lv===4?'0 0 6px rgba(212,175,55,0.4),0 0 12px rgba(212,175,55,0.15)':'none';
+            gridHtml+='<div class="streak-cell" style="width:14px;height:14px;background:'+levels[lv]+';border-radius:3px;border:1px solid '+(lv>0?'rgba(212,175,55,0.35)':'rgba(100,116,139,0.12)')+';box-shadow:'+glow+';transition:all .25s cubic-bezier(.4,0,.2,1)" title="'+dn+', '+w.date+': '+w.count+' contributions"></div>';
+          });
+        });
+        gridHtml+='</div>';
+        html += gridHtml;
+        html += '</div>';
+        
+        // Month labels with better spacing
+        html += '<div style="display:flex;justify-content:space-between;margin-top:.35rem;font-size:.55rem;color:var(--muted);padding-left:34px">';
+        var sm=Object.keys(monthPositions).sort(function(a,b){return monthPositions[a]-monthPositions[b];});
+        sm.forEach(function(m){html+='<span>'+months[m]+'</span>';});
+        html += '</div>';
+        
+        // Legend with better style
+        html += '<div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:1rem;padding:.5rem;background:rgba(0,0,0,0.15);border-radius:12px;border:1px solid rgba(212,175,55,0.06)">';
+        html += '<span style="font-size:.6rem;color:var(--muted);letter-spacing:.5px">LESS</span>';
+        levels.forEach(function(c,i){
+          html+='<div style="width:14px;height:14px;background:'+c+';border-radius:3px;border:1px solid rgba(212,175,55,0.25);transition:all .2s" onmouseover="this.style.transform=\'scale(1.3)\'" onmouseout="this.style.transform=\'\'"></div>';
+        });
+        html += '<span style="font-size:.6rem;color:var(--muted);letter-spacing:.5px">MORE</span></div>';
+        
+        // Motivational quote
+        var qs=["Keep the streak alive! &#x1F525;","Consistency is key! &#x1F4AA;","Every commit counts! &#x1F680;","Building greatness day by day! &#x2B50;","You&apos;re unstoppable! &#x26A1;","Progress over perfection! &#x1F4C8;"];
+        var quote=qs[Math.floor(Math.random()*qs.length)];
+        html += '<div style="text-align:center;margin-top:1rem;padding:.75rem;background:rgba(212,175,55,0.04);border-radius:12px;border:1px solid rgba(212,175,55,0.08)"><span style="font-size:.72rem;color:rgba(212,175,55,0.7);font-style:italic;letter-spacing:.3px">'+quote+'</span></div>';
+        html += '</div></div>';
+      }
+
+      // Activity stats cards with emojis
+      if (ghData.events && ghData.events.length) {
+        var pushes = 0, prs = 0, creates = 0, forks = 0, stars = 0, issues = 0;
+        ghData.events.forEach(function(ev) {
+          if (ev.type === "PushEvent") pushes++;
+          else if (ev.type === "PullRequestEvent") prs++;
+          else if (ev.type === "CreateEvent") creates++;
+          else if (ev.type === "ForkEvent") forks++;
+          else if (ev.type === "WatchEvent") stars++;
+          else if (ev.type === "IssuesEvent") issues++;
+        });
+        html += '<div class="panel" style="margin-top:.75rem"><h3>Activity Stats (90 days)</h3>';
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.75rem;margin-top:.5rem">';
+        if (pushes > 0) html += '<div class="card" style="padding:.75rem;text-align:center;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2)"><div style="font-size:1.5rem;margin-bottom:.25rem">📤</div><div style="font-size:1.25rem;font-weight:700;color:var(--gold)">' + pushes + '</div><div style="font-size:.65rem;color:var(--muted)">Pushes</div></div>';
+        if (prs > 0) html += '<div class="card" style="padding:.75rem;text-align:center;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)"><div style="font-size:1.5rem;margin-bottom:.25rem">🔀</div><div style="font-size:1.25rem;font-weight:700;color:var(--emerald)">' + prs + '</div><div style="font-size:.65rem;color:var(--muted)">PRs</div></div>';
+        if (creates > 0) html += '<div class="card" style="padding:.75rem;text-align:center;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2)"><div style="font-size:1.5rem;margin-bottom:.25rem">✨</div><div style="font-size:1.25rem;font-weight:700;color:#3b82f6">' + creates + '</div><div style="font-size:.65rem;color:var(--muted)">Created</div></div>';
+        if (forks > 0) html += '<div class="card" style="padding:.75rem;text-align:center;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2)"><div style="font-size:1.5rem;margin-bottom:.25rem">🍴</div><div style="font-size:1.25rem;font-weight:700;color:#8b5cf6">' + forks + '</div><div style="font-size:.65rem;color:var(--muted)">Forks</div></div>';
+        if (stars > 0) html += '<div class="card" style="padding:.75rem;text-align:center;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2)"><div style="font-size:1.5rem;margin-bottom:.25rem">⭐</div><div style="font-size:1.25rem;font-weight:700;color:var(--gold)">' + stars + '</div><div style="font-size:.65rem;color:var(--muted)">Stars</div></div>';
+        if (issues > 0) html += '<div class="card" style="padding:.75rem;text-align:center;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)"><div style="font-size:1.5rem;margin-bottom:.25rem">🐛</div><div style="font-size:1.25rem;font-weight:700;color:#ef4444">' + issues + '</div><div style="font-size:.65rem;color:var(--muted)">Issues</div></div>';
+        html += '</div></div>';
+      }
+
+      // Animated bar charts for pushes/PRs/creates
+      var weeklyAct = ghData.weeklyActivity;
+      if ((!weeklyAct || !weeklyAct.length) && ghData.events && ghData.events.length) {
+        weeklyAct = [];
+        var now = new Date();
+        var weekActivityMap = {};
+        ghData.events.forEach(function(e) {
+          var ed = new Date(e.created_at);
+          var wn = "W" + Math.ceil((ed.getTime() - new Date(now.getTime() - 90 * 86400000).getTime()) / (7 * 86400000));
+          if (!weekActivityMap[wn]) weekActivityMap[wn] = { week: wn, pushes: 0, prs: 0, creates: 0 };
+          if (e.type === "PushEvent") weekActivityMap[wn].pushes++;
+          else if (e.type === "PullRequestEvent") weekActivityMap[wn].prs++;
+          else if (e.type === "CreateEvent") weekActivityMap[wn].creates++;
+        });
+        Object.keys(weekActivityMap).slice(-12).forEach(function(k) { weeklyAct.push(weekActivityMap[k]); });
+      }
+      if (weeklyAct && weeklyAct.length) {
+        html += '<div class="panel" style="margin-top:.75rem"><h3>📈 Weekly Activity</h3>';
+        html += '<div style="display:flex;align-items:flex-end;height:120px;gap:4px;margin-top:.5rem;padding-bottom:20px">';
+        var waMax = 0;
+        weeklyAct.forEach(function(w) { var t = (w.pushes || 0) + (w.prs || 0) + (w.creates || 0); if (t > waMax) waMax = t; });
+        weeklyAct.forEach(function(w) {
+          var total = (w.pushes || 0) + (w.prs || 0) + (w.creates || 0);
+          var h = waMax > 0 ? Math.round((total / waMax) * 100) : 0;
+          html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
+          html += '<div style="width:100%;display:flex;flex-direction:column;align-items:center;height:' + h + '%">';
+          if (w.creates > 0) html += '<div style="width:100%;background:#3b82f6;height:' + Math.round((w.creates / total) * 100) + '%" title="Creates: ' + w.creates + '"></div>';
+          if (w.prs > 0) html += '<div style="width:100%;background:#10b981;height:' + Math.round((w.prs / total) * 100) + '%" title="PRs: ' + w.prs + '"></div>';
+          if (w.pushes > 0) html += '<div style="width:100%;background:var(--gold);height:' + Math.round((w.pushes / total) * 100) + '%" title="Pushes: ' + w.pushes + '"></div>';
+          html += '</div>';
+          html += '<span style="font-size:.5rem;color:var(--muted)">' + (w.week || "") + '</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+        html += '<div style="display:flex;gap:1rem;margin-top:.5rem;font-size:.65rem"><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:var(--gold);border-radius:2px"></span>Pushes</span><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#10b981;border-radius:2px"></span>PRs</span><span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#3b82f6;border-radius:2px"></span>Creates</span></div></div>';
+      }
+
       // Repos
       if (ghData.repos && ghData.repos.length) {
         html += '<div class="github-repos" style="margin-top:.75rem"><div style="font-size:.78rem;color:var(--gold);margin-bottom:.5rem;font-weight:600">📌 Top Repositories</div>';
@@ -1781,6 +2611,7 @@
       html += '<pre id="gh-readme-output" style="margin-top:.75rem;background:var(--code-bg);border:1px solid var(--code-border);border-radius:12px;padding:1rem;font-size:.78rem;white-space:pre-wrap;color:var(--text);max-height:400px;overflow:auto;display:none"></pre></div>';
     }
     document.getElementById("career-panel-github").innerHTML = html;
+    document.getElementById("career-panel-github").style.display = "block";
     document.getElementById("gh-fetch").addEventListener("click", fetchGitHubProfile);
     var clearBtn2 = document.getElementById("gh-clear");
     if (clearBtn2) clearBtn2.addEventListener("click", function () { saveJSON("tm-github-data", null); renderGitHubPanel(); toast("GitHub data cleared"); });
@@ -2179,7 +3010,7 @@
   function initProjectFilters() {
     var c = document.getElementById("proj-cat");
     c.innerHTML =
-      '<option value="all">All categories</option><option value="frontend">Frontend</option><option value="backend">Backend</option><option value="devops">DevOps</option><option value="security">Security</option><option value="data-ai">Data &amp; AI</option>';
+      '<option value="all">All categories</option><option value="frontend">Frontend</option><option value="backend">Backend</option><option value="fullstack">Full Stack</option><option value="devops">DevOps</option><option value="security">Security</option><option value="ai">AI Engineer</option><option value="data-ai">Data &amp; AI</option><option value="blockchain">Blockchain</option>';
     var tr = document.getElementById("proj-tier");
     tr.innerHTML =
       '<option value="all">All tiers</option><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option><option value="production-grade">Production-grade</option>';
@@ -2293,6 +3124,12 @@
     document.getElementById("fab-quick").addEventListener("click", function () {
       toast("Shortcuts: Ctrl+K search · / focus docs · Esc close overlays");
     });
+    document.getElementById("fab-chat").addEventListener("click", function () {
+      var panel = document.getElementById("chat-panel");
+      var open = panel.classList.toggle("open");
+      panel.setAttribute("aria-hidden", String(!open));
+      if (open) document.getElementById("chat-input").focus();
+    });
   }
 
   function initHotkeys() {
@@ -2306,6 +3143,7 @@
       if (e.key === "Escape") {
         closeModal("glob-overlay");
         closeModal("modal-project");
+        closeModal("modal-role-detail");
       }
     });
   }
@@ -2313,6 +3151,7 @@
   function closeModal(id) {
     document.getElementById(id).classList.remove("open");
     document.getElementById(id).setAttribute("aria-hidden", "true");
+    if (id === "modal-role-detail" || id === "modal-project") document.body.style.overflow = "";
     if (id === "modal-project" && lastFocus) {
       lastFocus.focus();
       lastFocus = null;
@@ -2341,6 +3180,130 @@
   }
 
   // ===== ANIMATION SYSTEM =====
+  function initChat() {
+    var input = document.getElementById("chat-input");
+    var send = document.getElementById("chat-send");
+    var close = document.getElementById("chat-close");
+    var deferredPrompt = null;
+
+    window.addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // greeting suggestions already shown in HTML, but handle any suggestion click via delegation
+    document.getElementById("chat-body").addEventListener("click", function (e) {
+      var btn = e.target.closest(".chat-quick");
+      if (!btn) return;
+      var val = btn.getAttribute("data-val") || btn.textContent;
+      // trigger native install prompt if Download app chip is clicked
+      if (/download|install/i.test(val) && deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+      }
+      input.value = val;
+      send.click();
+    });
+
+    function handleMessage() {
+      var text = input.value.trim();
+      if (!text) return;
+      addChatMsg(text, "user");
+      input.value = "";
+      setTimeout(function () { chatResponse(text); }, 300);
+    }
+
+    send.addEventListener("click", handleMessage);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") handleMessage();
+    });
+    close.addEventListener("click", function () {
+      document.getElementById("chat-panel").classList.remove("open");
+      document.getElementById("chat-panel").setAttribute("aria-hidden", "true");
+    });
+  }
+
+  function addChatMsg(text, who) {
+    var body = document.getElementById("chat-body");
+    var div = document.createElement("div");
+    div.className = "chat-msg " + who;
+    div.textContent = text;
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function chatResponse(text) {
+    var t = text.toLowerCase();
+    var body = document.getElementById("chat-body");
+    var div = document.createElement("div");
+    div.className = "chat-msg bot";
+
+    if (/home|start|hello|hi|hey/.test(t)) {
+      div.innerHTML = "👋 Welcome! You're on the <strong>Home</strong> page. I can take you to:<br><br>" +
+        "📚 <strong>Documentation Hub</strong> — MDN-style reference<br>" +
+        "🧱 <strong>Project Lab</strong> — portfolio-ready builds<br>" +
+        "🎤 <strong>Interview Dojo</strong> — spaced repetition prep<br>" +
+        "📈 <strong>Dashboard</strong> — XP, streaks, analytics<br>" +
+        "🗺️ <strong>Roadmap</strong> — role-based career paths<br>" +
+        "⚔️ <strong>Chest</strong> — surprise rewards<br><br>" +
+        "Just type the section name to go there!<br><br>" +
+        '<button class="chat-quick" data-val="Docs">📚 Docs</button> <button class="chat-quick" data-val="Projects">🧱 Projects</button> <button class="chat-quick" data-val="Interview">🎤 Interview</button> <button class="chat-quick" data-val="Dashboard">📈 Dashboard</button> <button class="chat-quick" data-val="Roadmap">🗺️ Roadmap</button> <button class="chat-quick" data-val="Chest">⚔️ Chest</button>' +
+        '<br><br><button class="chat-quick" data-val="How to use">🛠️ How to use</button> <button class="chat-quick" data-val="Feedback">💡 Feedback</button> <button class="chat-quick" data-val="Download app">📱 Download app</button>';
+    } else if (/feedback|suggest|improve|bug|issue/.test(t)) {
+      div.innerHTML = "💡 Got feedback or a suggestion? Head to the <strong>Feedback</strong> section on the Home page (scroll down) or email us directly. We'd love to hear from you!<br><br>👉 <em>Tip:</em> You can also use the form at the bottom of the Home page." +
+        '<br><br><button class="chat-quick" data-val="Hi">🔙 Back to menu</button>';
+    } else if (/how.*(use|work|navigate|site)|guide|tutorial|help/.test(t)) {
+      div.innerHTML = "🛠️ <strong>How to use TechMaster:</strong><br><br>" +
+        "• <strong>Home</strong> — Overview of everything<br>" +
+        "• <strong>Roadmap</strong> — Pick a career path & track progress<br>" +
+        "• <strong>Docs</strong> — Browse reference topics with TOC<br>" +
+        "• <strong>Projects</strong> — Filter by tier/category and build<br>" +
+        "• <strong>Interview</strong> — Practice with spaced repetition<br>" +
+        "• <strong>Dashboard</strong> — See your XP, streaks & heatmaps<br>" +
+        "• <strong>Notes</strong> — Save personal notes per topic<br>" +
+        "• Press <kbd>Ctrl+K</kbd> to search everything instantly<br><br>" +
+        "Ask me to take you anywhere!" +
+        '<br><br><button class="chat-quick" data-val="Hi">🔙 Back to menu</button>';
+    } else if (/download|install|pwa|app|mobile|offline/.test(t)) {
+      div.innerHTML = "📱 <strong>Install on your device:</strong><br><br>" +
+        "On <strong>Chrome (Android)</strong>: open the menu (⋮) → tap <em>Add to Home screen</em>.<br>" +
+        "On <strong>Safari (iOS)</strong>: tap the Share icon → <em>Add to Home Screen</em>.<br>" +
+        "On <strong>Desktop Chrome</strong>: click the install icon (⊕) in the address bar.<br><br>" +
+        "Once installed, TechMaster works offline with cached content! 🚀" +
+        '<br><br><button class="chat-quick" data-val="Hi">🔙 Back to menu</button>';
+    } else if (/documentation|docs|doc/.test(t)) {
+      div.innerHTML = "Heading to <strong>Documentation Hub</strong> 📚";
+      setTimeout(function () { showPage("documentation"); }, 600);
+    } else if (/project|build|lab/.test(t)) {
+      div.innerHTML = "Heading to <strong>Project Lab</strong> 🧱";
+      setTimeout(function () { showPage("projects"); }, 600);
+    } else if (/interview|dojo/.test(t)) {
+      div.innerHTML = "Heading to <strong>Interview Dojo</strong> 🎤";
+      setTimeout(function () { showPage("interview"); }, 600);
+    } else if (/dashboard|dash|analytics/.test(t)) {
+      div.innerHTML = "Heading to <strong>Dashboard</strong> 📈";
+      setTimeout(function () { showPage("dashboard"); }, 600);
+    } else if (/roadmap|map|career/.test(t)) {
+      div.innerHTML = "Heading to <strong>Roadmap</strong> 🗺️";
+      setTimeout(function () { showPage("roadmap"); }, 600);
+    } else if (/chest|surprise|reward/.test(t)) {
+      div.innerHTML = "Heading to <strong>Chest</strong> ⚔️";
+      setTimeout(function () { showPage("chest"); }, 600);
+    } else {
+      div.innerHTML = "I can help you navigate the site! Try saying:<br>" +
+        "• <strong>Docs</strong> — Documentation Hub<br>" +
+        "• <strong>Projects</strong> — Project Lab<br>" +
+        "• <strong>Interview</strong> — Interview Dojo<br>" +
+        "• <strong>Dashboard</strong> — Productivity Dashboard<br>" +
+        "• <strong>Roadmap</strong> — Role-based paths<br>" +
+        "• <strong>Chest</strong> — Surprise rewards<br><br>" +
+        "Or try: <strong>Feedback</strong>, <strong>How to use</strong>, <strong>Download app</strong>";
+    }
+
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  }
+
   function initAnimations() {
     // Scroll reveal using IntersectionObserver
     if ("IntersectionObserver" in window) {
@@ -2551,32 +3514,38 @@
     });
   }
 
-  buildInterviewBank();
-  initNav();
-  initRoadmap();
-  initDocsShell();
-  initDocsPage();
-  initProjectFilters();
-  initInterviewFilters();
-  initPlannerNotes();
-  initCareer();
-  initGlobalSearch();
-  initThemes();
-  initScrollUi();
-  initHotkeys();
-  initAnimations();
-  initParticles();
-  initStatsHome();
-  initPageNav();
-  initBackButton();
-  updatePageNav("home");
-  globalSearch("");
-  renderProjects();
-  renderDashboard();
-  initCustomSelects();
-
+  try {
+    buildInterviewBank();
+    initAuth();
+    handleAuth();
+    initNav();
+    initRoadmap();
+    initDocsShell();
+    initDocsPage();
+    initProjectFilters();
+    initInterviewFilters();
+    initPlannerNotes();
+    initCareer();
+    initGlobalSearch();
+    initThemes();
+    initScrollUi();
+    initHotkeys();
+    initChat();
+    initAnimations();
+    initParticles();
+    initStatsHome();
+    initPageNav();
+    initBackButton();
+    updatePageNav("home");
+    globalSearch("");
+    renderProjects();
+    renderDashboard();
+    initCustomSelects();
+  } catch(e) { console.error("Startup error:", e); }
+  
   // Feedback form — opens mailto with form data
-  document.getElementById("feedback-form").addEventListener("submit", function (e) {
+  try {
+    document.getElementById("feedback-form").addEventListener("submit", function (e) {
     e.preventDefault();
     var name = document.getElementById("fb-name").value.trim();
     var email = document.getElementById("fb-email").value.trim();
@@ -2587,6 +3556,7 @@
     document.getElementById("feedback-form").style.display = "none";
     document.getElementById("fb-success").classList.add("show");
   });
+  } catch(e) {}
 
   // Observe cards for scroll reveal
   document.querySelectorAll(".card, .career-card, .proj-card, .strategy-card, .dash-stat, .hero-stat").forEach(function (el) {
@@ -2611,6 +3581,10 @@
         showChestSurprise();
       } else {
         showPage(id);
+        if (c.getAttribute("data-nav-role") === "true") {
+          var roleBtn = document.querySelector('.roadmap-view-btn[data-view="role"]');
+          if (roleBtn) setTimeout(function() { roleBtn.click(); }, 100);
+        }
       }
     });
   });
@@ -2651,5 +3625,7 @@
     document.getElementById("lqConfirm").addEventListener("click", function(){ lqOverlay.classList.remove("active"); window.open("https://life-quest-lac.vercel.app","_blank"); });
     lqOverlay.addEventListener("click", function(e){ if(e.target===lqOverlay) lqOverlay.classList.remove("active"); });
   }
+
+  window.showPage = showPage; // expose for inline onclick handlers
 
 })();
